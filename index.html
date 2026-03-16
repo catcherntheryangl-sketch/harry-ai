@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#07070C">
+<title>Harry A.I.</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#07070C; --bg2:#0F0F1A; --bg3:#161624; --bg4:#1E1E30;
+  --bdr:rgba(255,255,255,.07); --bdr2:rgba(255,255,255,.12);
+  --text:#F8FAFC; --t2:rgba(248,250,252,.6); --t3:rgba(248,250,252,.28); --t4:rgba(248,250,252,.08);
+  --indigo:#6C63FF; --ind2:#9D97FF;
+  --coral:#FF6B6B; --cor2:#FF9E9E;
+  --mint:#43E97B; --mnt2:#7EEEA8;
+  --amber:#FFB347; --amb2:#ffd08a;
+  --sky:#4FC3F7; --sky2:#87D8F8;
+  --pink:#FF6EC7; --pnk2:#ff9ee2;
+  --r:16px; --rLg:24px;
+}
+[data-theme="light"] {
+  --bg:#F1F5F9; --bg2:#fff; --bg3:#F8FAFC; --bg4:#EEF2FF;
+  --bdr:rgba(0,0,0,.08); --bdr2:rgba(0,0,0,.14);
+  --text:#0F172A; --t2:rgba(15,23,42,.6); --t3:rgba(15,23,42,.3); --t4:rgba(15,23,42,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:430px;margin:0 auto;padding-bottom:90px;overflow-x:hidden;}
+::-webkit-scrollbar{display:none;}
+input,textarea,button{font-family:'Outfit',sans-serif;}
+
+/* ── PAGES ── */
+.page{display:none;flex-direction:column;}
+.page.active{display:flex;}
+
+/* ── HEADER ── */
+.app-header{display:flex;align-items:center;justify-content:space-between;padding:36px 16px 10px;}
+.logo{font-family:'Playfair Display',serif;font-size:32px;font-weight:900;letter-spacing:-1.5px;background:linear-gradient(135deg,var(--text) 20%,var(--ind2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hdr-right{display:flex;gap:8px;}
+.hdr-btn{width:36px;height:36px;border-radius:50%;background:var(--bg3);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--t2);}
+.hdr-btn:active{background:var(--bg4);}
+
+/* ── MODE TABS ── */
+.mode-tabs{display:flex;gap:6px;overflow-x:auto;padding:0 14px 10px;scrollbar-width:none;}
+.mode-tabs::-webkit-scrollbar{display:none;}
+.mode-tab{display:inline-flex;align-items:center;gap:5px;padding:7px 15px;border-radius:100px;flex-shrink:0;font-size:12px;font-weight:600;cursor:pointer;user-select:none;background:rgba(255,255,255,.04);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.08);color:var(--t2);transition:all .2s ease;white-space:nowrap;}
+.mode-tab:active{transform:scale(.95);}
+.mode-tab.active{background:rgba(108,99,255,.15);border-color:rgba(108,99,255,.4);box-shadow:0 0 20px rgba(108,99,255,.25);color:var(--ind2);}
+.mode-tab[data-mode="image"].active{background:rgba(255,107,107,.13);border-color:rgba(255,107,107,.4);box-shadow:0 0 18px rgba(255,107,107,.22);color:var(--cor2);}
+.mode-tab[data-mode="code"].active{background:rgba(79,195,247,.11);border-color:rgba(79,195,247,.4);box-shadow:0 0 18px rgba(79,195,247,.2);color:var(--sky2);}
+.mode-tab[data-mode="audio"].active,.mode-tab[data-mode="speech"].active,.mode-tab[data-mode="music"].active{background:rgba(255,179,71,.11);border-color:rgba(255,179,71,.4);box-shadow:0 0 18px rgba(255,179,71,.2);color:var(--amb2);}
+.mode-tab[data-mode="reason"].active{background:rgba(126,206,255,.11);border-color:rgba(126,206,255,.4);box-shadow:0 0 18px rgba(126,206,255,.2);color:var(--sky2);}
+.mode-tab[data-mode="relay"].active{background:rgba(255,110,199,.13);border-color:rgba(255,110,199,.4);box-shadow:0 0 20px rgba(255,110,199,.3);color:var(--pnk2);}
+
+/* ── OMNIBOX ── */
+.omnibox-wrap{margin:0 14px 8px;}
+.omnibox{background:var(--bg2);border:1.5px solid rgba(108,99,255,.2);border-radius:var(--rLg);padding:8px;display:flex;align-items:flex-end;gap:8px;transition:border-color .2s,box-shadow .2s;}
+.omnibox:focus-within{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(108,99,255,.1);}
+.omni-spark{width:38px;height:38px;flex-shrink:0;border:none;background:rgba(255,179,71,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--amber);transition:transform .12s;}
+.omni-spark:active{transform:scale(.88);}
+.omni-ta{flex:1;background:transparent;border:none;color:var(--text);font-size:15px;padding:8px 0;outline:none;resize:none;max-height:120px;line-height:1.45;}
+.omni-ta::placeholder{color:var(--t3);}
+.omni-create{background:var(--indigo);color:#fff;border:none;border-radius:13px;height:38px;padding:0 18px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(108,99,255,.4);transition:transform .12s,opacity .2s;white-space:nowrap;}
+.omni-create:active{transform:scale(.9);}
+.omni-create:disabled{opacity:.4;cursor:wait;}
+
+/* ── STATUS ── */
+.status-row{display:flex;align-items:center;justify-content:space-between;padding:4px 14px 8px;}
+.status-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--mnt2);}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--mint);animation:blink 2.5s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.clear-btn{font-size:11px;padding:3px 9px;border-radius:7px;background:var(--bg3);border:1px solid var(--bdr);color:var(--t3);cursor:pointer;display:none;}
+.clear-btn:active{background:var(--bg4);}
+
+/* ── FEED CARDS ── */
+.feed{padding:0 14px;}
+.feed-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--rLg);overflow:hidden;margin-bottom:12px;animation:fadeup .22s ease;}
+@keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fc-head{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border-bottom:1px solid var(--bdr);}
+.fc-label{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+.fc-dot{width:7px;height:7px;border-radius:50%;animation:pulse 1.2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.fc-actions{display:flex;gap:4px;}
+.fc-btn{width:27px;height:27px;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);background:transparent;border:none;transition:color .15s;}
+.fc-btn:active{color:var(--text);background:var(--bg3);}
+.fc-btn.starred{color:var(--amber);}
+.fc-body{padding:13px;}
+.fc-text{font-size:14px;color:var(--t2);line-height:1.75;word-break:break-word;}
+.fc-text strong{color:var(--text);font-weight:600;}
+.fc-text em{font-style:italic;}
+.fc-text code{font-family:monospace;background:rgba(108,99,255,.12);color:var(--ind2);padding:1px 5px;border-radius:4px;font-size:12px;}
+.fc-text pre{background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;padding:11px;overflow-x:auto;margin:7px 0;font-family:monospace;font-size:12px;color:var(--sky2);line-height:1.6;}
+.fc-text h1,.fc-text h2,.fc-text h3{color:var(--text);font-weight:600;margin:9px 0 4px;}
+.fc-text h1{font-size:16px;}.fc-text h2{font-size:14px;}.fc-text h3{font-size:13px;}
+.fc-text ul,.fc-text ol{padding-left:17px;margin:5px 0;}
+.fc-text li{margin:3px 0;}
+.fc-text blockquote{border-left:3px solid var(--indigo);padding-left:10px;margin:7px 0;font-style:italic;color:var(--t2);}
+.fc-img img{width:100%;display:block;}
+.fc-img-loading{height:220px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:9px;color:var(--t3);font-size:13px;}
+.spin{width:26px;height:26px;border-radius:50%;border:2.5px solid rgba(255,255,255,.1);animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fc-foot{display:flex;align-items:center;gap:8px;padding:8px 13px;border-top:1px solid var(--bdr);flex-wrap:wrap;}
+.fc-act{font-size:11px;color:var(--t3);cursor:pointer;padding:2px 0;}
+.fc-act:active{color:var(--text);}
+.run-btn{font-size:11px;padding:3px 9px;border-radius:7px;background:rgba(79,195,247,.1);border:1px solid rgba(79,195,247,.22);color:var(--sky2);cursor:pointer;}
+.run-btn:active{background:rgba(79,195,247,.2);}
+.dl-btn{font-size:11px;padding:3px 9px;border-radius:7px;background:rgba(67,233,123,.08);border:1px solid rgba(67,233,123,.2);color:var(--mnt2);cursor:pointer;}
+.shimmer{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shim 1.4s infinite;border-radius:10px;}
+@keyframes shim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── RELAY PAGE ── */
+.relay-wrap{padding:0 14px 20px;}
+.relay-intro{font-size:13px;color:var(--t3);line-height:1.6;margin-bottom:14px;padding:12px 13px;background:rgba(255,110,199,.06);border:1px solid rgba(255,110,199,.15);border-radius:var(--r);}
+.relay-intro strong{color:var(--pnk2);}
+.relay-label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--t3);margin-bottom:8px;padding:0 2px;}
+.relay-start{width:100%;background:var(--bg2);border:1.5px solid rgba(255,110,199,.2);border-radius:var(--r);padding:13px;font-size:14px;color:var(--text);resize:none;outline:none;line-height:1.5;min-height:80px;max-height:160px;margin-bottom:14px;}
+.relay-start::placeholder{color:var(--t3);}
+.relay-start:focus{border-color:var(--pink);}
+
+/* chain builder */
+.chain-list{display:flex;flex-direction:column;gap:0;margin-bottom:12px;}
+.chain-step{position:relative;}
+.chain-arrow{display:flex;justify-content:center;padding:3px 0;color:var(--pnk2);font-size:18px;opacity:.5;}
+.step-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);padding:11px 12px;display:flex;align-items:center;gap:10px;}
+.step-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.step-model-sel{flex:1;background:var(--bg3);border:1px solid var(--bdr);border-radius:9px;padding:7px 10px;font-size:13px;color:var(--text);cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;}
+.step-instruction{width:100%;background:transparent;border:none;border-top:1px solid var(--bdr);padding:8px 12px 4px;font-size:12px;color:var(--t2);outline:none;margin-top:7px;}
+.step-instruction::placeholder{color:var(--t3);}
+.step-del{width:26px;height:26px;border-radius:7px;border:none;background:transparent;color:var(--t3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-del:active{background:rgba(255,107,107,.1);color:var(--cor2);}
+.add-step-btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;background:var(--bg2);border:1px dashed rgba(255,110,199,.25);border-radius:var(--r);cursor:pointer;font-size:13px;color:var(--pnk2);margin-bottom:12px;}
+.add-step-btn:active{background:var(--bg3);}
+.relay-run-btn{width:100%;padding:14px;background:var(--pink);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(255,110,199,.4);transition:transform .12s,opacity .2s;}
+.relay-run-btn:active{transform:scale(.97);}
+.relay-run-btn:disabled{opacity:.4;cursor:wait;}
+
+/* relay result chain */
+.relay-results{padding:0 14px 20px;}
+.relay-step-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden;margin-bottom:0;}
+.relay-connector{display:flex;flex-direction:column;align-items:center;padding:4px 0;}
+.connector-line{width:2px;height:20px;background:linear-gradient(to bottom,var(--pnk2),rgba(255,110,199,.2));}
+.connector-dot{width:8px;height:8px;border-radius:50%;background:var(--pink);box-shadow:0 0 8px rgba(255,110,199,.5);}
+.rsc-head{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--bdr);}
+.rsc-avatar{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.rsc-name{font-size:12px;font-weight:600;color:var(--t2);}
+.rsc-status{margin-left:auto;font-size:10px;padding:2px 7px;border-radius:6px;}
+.rsc-waiting{background:var(--t4);color:var(--t3);}
+.rsc-running{background:rgba(255,110,199,.12);color:var(--pnk2);}
+.rsc-done{background:rgba(67,233,123,.1);color:var(--mnt2);}
+.rsc-error{background:rgba(255,107,107,.1);color:var(--cor2);}
+.rsc-body{padding:12px;font-size:13.5px;color:var(--t2);line-height:1.75;}
+
+/* ── CONNECT PAGE ── */
+.connect-wrap{padding:0 14px 20px;}
+.connect-intro{font-size:13px;color:var(--t3);line-height:1.6;margin-bottom:16px;}
+.connect-intro a{color:var(--ind2);text-decoration:none;}
+.provider-grid{display:flex;flex-direction:column;gap:10px;}
+.provider-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden;transition:border-color .2s;}
+.provider-card.connected{border-color:rgba(67,233,123,.25);}
+.pc-head{display:flex;align-items:center;gap:11px;padding:12px 13px;}
+.pc-logo{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;color:#fff;}
+.pc-name{font-size:14px;font-weight:600;color:var(--text);}
+.pc-model{font-size:11px;color:var(--t3);margin-top:1px;}
+.pc-status{margin-left:auto;width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.pc-status.on{background:var(--mint);box-shadow:0 0 6px rgba(67,233,123,.6);}
+.pc-status.off{background:var(--t4);}
+.pc-body{padding:0 12px 12px;display:flex;flex-direction:column;gap:7px;}
+.pc-key-row{display:flex;gap:6px;}
+.pc-key-input{flex:1;background:var(--bg3);border:1px solid var(--bdr);border-radius:9px;padding:8px 11px;font-size:12px;color:var(--text);outline:none;font-family:monospace;transition:border-color .2s;}
+.pc-key-input:focus{border-color:var(--indigo);}
+.pc-key-input::placeholder{color:var(--t3);font-family:'Outfit',sans-serif;}
+.pc-save-btn{padding:0 13px;height:34px;border-radius:9px;border:none;background:var(--indigo);color:#fff;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0;}
+.pc-save-btn:active{opacity:.8;}
+.pc-row2{display:flex;align-items:center;justify-content:space-between;}
+.pc-test-btn{font-size:11px;padding:3px 9px;border-radius:7px;background:var(--bg3);border:1px solid var(--bdr);color:var(--t2);cursor:pointer;}
+.pc-test-btn:active{background:var(--bg4);}
+.pc-get-link{font-size:11px;color:var(--ind2);text-decoration:none;}
+.pc-msg{font-size:11px;padding:4px 7px;border-radius:6px;display:none;}
+.pc-msg.ok{background:rgba(67,233,123,.1);color:var(--mnt2);display:block;}
+.pc-msg.err{background:rgba(255,107,107,.1);color:var(--cor2);display:block;}
+.pc-btn-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:4px;}
+.pc-connect-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:9px;border:none;background:rgba(108,99,255,.15);color:var(--ind2);font-size:12px;font-weight:600;cursor:pointer;transition:background .15s;}
+.pc-connect-btn:active{background:rgba(108,99,255,.25);}
+.pc-steps{background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;padding:10px 12px;margin:6px 0;display:flex;flex-direction:column;gap:6px;}
+.pc-step{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--t2);line-height:1.4;}
+.pc-step-num{width:18px;height:18px;border-radius:50%;background:rgba(108,99,255,.15);color:var(--ind2);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.pc-clipboard-hint{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--mnt2);margin-top:4px;padding:6px 8px;background:rgba(67,233,123,.06);border-radius:7px;border:1px solid rgba(67,233,123,.15);}
+.clip-pulse{width:7px;height:7px;border-radius:50%;background:var(--mint);animation:blink 1s infinite;flex-shrink:0;}
+.pc-free-badge{font-size:9px;padding:2px 7px;border-radius:6px;background:rgba(67,233,123,.1);color:var(--mnt2);border:1px solid rgba(67,233,123,.2);font-weight:600;}
+
+/* ── HISTORY PAGE ── */
+.hist-wrap{padding:0 14px 20px;}
+.hist-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);padding:12px 13px;cursor:pointer;margin-bottom:9px;}
+.hist-card:active{background:var(--bg3);}
+.hist-type{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);margin-bottom:4px;font-weight:600;}
+.hist-q{font-size:13px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
+.hist-ts{font-size:10px;color:var(--t3);}
+.empty{padding:40px 20px;text-align:center;color:var(--t3);font-size:14px;line-height:1.6;}
+
+/* ── VAULT DRAWER ── */
+.vault-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:399;display:none;backdrop-filter:blur(3px);}
+.vault-overlay.open{display:block;}
+.vault-drawer{position:fixed;right:0;top:0;bottom:0;width:300px;background:var(--bg2);border-left:1px solid var(--bdr);z-index:400;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.4);}
+.vault-drawer.open{transform:translateX(0);}
+.vault-hdr{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.vault-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--t2);}
+.vault-body{flex:1;overflow-y:auto;padding:12px;}
+.vault-card{background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--r);padding:11px;cursor:pointer;margin-bottom:9px;}
+.vault-card:active{border-color:var(--indigo);}
+.vault-type{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ind2);margin-bottom:4px;}
+.vault-q{font-size:12px;color:var(--text);margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.vault-img-thumb{width:100%;height:70px;object-fit:cover;border-radius:8px;margin-top:6px;display:block;}
+.vault-empty{padding:30px 16px;text-align:center;color:var(--t3);font-size:13px;line-height:1.6;}
+
+/* ── BOTTOM NAV ── */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;display:flex;background:rgba(7,7,12,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--bdr);padding:8px 0 calc(10px + env(safe-area-inset-bottom));z-index:100;}
+[data-theme="light"] .bnav{background:rgba(241,245,249,.94);}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 0;opacity:.4;transition:opacity .2s;}
+.ni.on{opacity:1;}
+.ni:active{opacity:.6;}
+.nlbl{font-size:9px;color:var(--t3);font-weight:600;letter-spacing:.3px;}
+.ni.on .nlbl{color:var(--ind2);}
+.ni-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
+</style>
+</head>
+<body>
+
+<!-- VAULT -->
+<div class="vault-overlay" id="vaultOverlay"></div>
+<div class="vault-drawer" id="vaultDrawer">
+  <div class="vault-hdr">
+    <div class="vault-title">⭐ Vault</div>
+    <div class="hdr-btn" id="vaultCloseBtn" style="width:28px;height:28px">
+      <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+  </div>
+  <div class="vault-body" id="vaultBody"><div class="vault-empty">Nothing saved yet.<br>Tap ⭐ on any result.</div></div>
+</div>
+
+<!-- ═══ HOME ═══ -->
+<div class="page active" id="page-home">
+  <div class="app-header">
+    <div class="logo">Harry <span style="-webkit-text-fill-color:var(--ind2)">A.I.</span></div>
+    <div class="hdr-right">
+      <div class="hdr-btn" id="vaultOpenBtn" title="Vault">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2l2 6h6l-5 3.6L15 18l-5-3.6L5 18l2-6.4L2 8h6z" stroke="var(--amber)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="hdr-btn" id="themeBtn" title="Theme">
+        <svg id="themeIcon" width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2z" stroke="currentColor" stroke-width="1.5"/><path d="M10 6a4 4 0 000 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="mode-tabs" id="modeTabs">
+    <div class="mode-tab active" data-mode="all">✦ All</div>
+    <div class="mode-tab" data-mode="image">🖼 Image</div>
+    <div class="mode-tab" data-mode="code">⌨ Code</div>
+    <div class="mode-tab" data-mode="audio">🔊 Audio</div>
+    <div class="mode-tab" data-mode="music">🎵 Music</div>
+    <div class="mode-tab" data-mode="reason">🧠 Reason</div>
+    <div class="mode-tab" data-mode="translate">🌐 Translate</div>
+    <div class="mode-tab" data-mode="relay">🔗 Relay</div>
+  </div>
+
+  <div class="omnibox-wrap">
+    <div class="omnibox" id="omnibox">
+      <button class="omni-spark" id="improveBtn">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M10 2l1.5 4.5L16 8l-4.5 1.5L10 14l-1.5-4.5L4 8l4.5-1.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </button>
+      <textarea class="omni-ta" id="mainTa" rows="1" placeholder="Describe what you want to create…"></textarea>
+      <button class="omni-create" id="createBtn">CREATE</button>
+    </div>
+  </div>
+
+  <div class="status-row">
+    <div class="status-pill"><div class="sdot"></div><span id="statusTxt">Loading providers...</span></div>
+    <div class="clear-btn" id="clearFeedBtn">Clear</div>
+  </div>
+
+  <div class="feed" id="homeFeed"></div>
+</div>
+
+<!-- ═══ RELAY PAGE ═══ -->
+<div class="page" id="page-relay">
+  <div class="app-header">
+    <div class="logo" style="font-size:24px">🔗 Relay</div>
+    <div class="hdr-right">
+      <div class="hdr-btn" id="relayHelpBtn" title="How it works">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v5M8 5v.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="relay-wrap">
+    <div class="relay-intro">
+      <strong>AI Chain Mode.</strong> Your prompt starts with the first AI. Each response is passed to the next AI automatically. Build multi-step creative pipelines.
+    </div>
+
+    <div class="relay-label">Starting prompt</div>
+    <textarea class="relay-start" id="relayPrompt" placeholder="e.g. Write a short story about a robot learning to paint…"></textarea>
+
+    <div class="relay-label">Chain — drag to reorder</div>
+    <div class="chain-list" id="chainList"></div>
+
+    <div class="add-step-btn" id="addStepBtn">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Add AI to chain
+    </div>
+
+    <button class="relay-run-btn" id="relayRunBtn">
+      ▶ Run Chain
+    </button>
+  </div>
+
+  <div class="relay-results" id="relayResults" style="display:none"></div>
+</div>
+
+<!-- ═══ CONNECT PAGE ═══ -->
+<div class="page" id="page-connect">
+  <div class="app-header">
+    <div class="logo" style="font-size:24px">Connect</div>
+  </div>
+  <div class="connect-wrap">
+    <div class="connect-intro">
+      Paste your API keys to unlock each provider. Keys are stored only on your device — never sent to anyone but the AI provider directly.
+    </div>
+    <div class="provider-grid" id="providerGrid"></div>
+  </div>
+</div>
+
+<!-- ═══ HISTORY PAGE ═══ -->
+<div class="page" id="page-history">
+  <div class="app-header">
+    <div class="logo" style="font-size:24px">History</div>
+    <div class="hdr-btn" id="clearHistBtn" style="width:auto;padding:0 10px;border-radius:8px;font-size:11px;color:var(--t2)">Clear</div>
+  </div>
+  <div class="hist-wrap" id="histList"></div>
+</div>
+
+<!-- ═══ BOTTOM NAV ═══ -->
+<div class="bnav">
+  <div class="ni on" id="ni-home">
+    <div class="ni-icon"><svg width="19" height="19" viewBox="0 0 22 22" fill="none"><path d="M4 10.5L11 4l7 6.5V18a1 1 0 01-1 1H5a1 1 0 01-1-1v-7.5z" stroke="var(--ind2)" stroke-width="1.6" stroke-linejoin="round" fill="rgba(108,99,255,.14)"/></svg></div>
+    <div class="nlbl">Home</div>
+  </div>
+  <div class="ni" id="ni-relay">
+    <div class="ni-icon"><svg width="19" height="19" viewBox="0 0 22 22" fill="none"><circle cx="5" cy="11" r="2.5" stroke="rgba(255,110,199,.6)" stroke-width="1.4"/><circle cx="17" cy="5" r="2.5" stroke="rgba(255,110,199,.6)" stroke-width="1.4"/><circle cx="17" cy="17" r="2.5" stroke="rgba(255,110,199,.6)" stroke-width="1.4"/><path d="M7.5 11h4l2.5-5M7.5 11h4l2.5 5" stroke="rgba(255,110,199,.6)" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+    <div class="nlbl">Relay</div>
+  </div>
+  <div class="ni" id="ni-connect">
+    <div class="ni-icon"><svg width="19" height="19" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="3" stroke="rgba(255,255,255,.4)" stroke-width="1.4"/><path d="M11 2.5v2M11 17.5v2M2.5 11h2M17.5 11h2M5.1 5.1l1.4 1.4M15.5 15.5l1.4 1.4M5.1 16.9l1.4-1.4M15.5 6.5l1.4-1.4" stroke="rgba(255,255,255,.4)" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+    <div class="nlbl">Connect</div>
+  </div>
+  <div class="ni" id="ni-history">
+    <div class="ni-icon"><svg width="19" height="19" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="rgba(255,255,255,.4)" stroke-width="1.4"/><path d="M11 7v4l3 3" stroke="rgba(255,255,255,.4)" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+    <div class="nlbl">History</div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+/* ══════════════════════════════════════════════════════
+   Harry A.I. v17 — Multi-provider + Relay Chain
+   All keys stored locally. You own your keys.
+   Relay: AI talks to AI, n steps deep.
+══════════════════════════════════════════════════════ */
+
+// ── SAFE UI REFS ──────────────────────────────────────
+const $ = id => document.getElementById(id);
+const UI = {
+  mainTa:       $('mainTa'),
+  createBtn:    $('createBtn'),
+  improveBtn:   $('improveBtn'),
+  modeTabs:     $('modeTabs'),
+  homeFeed:     $('homeFeed'),
+  statusTxt:    $('statusTxt'),
+  clearFeedBtn: $('clearFeedBtn'),
+  vaultOpenBtn: $('vaultOpenBtn'),
+  vaultCloseBtn:$('vaultCloseBtn'),
+  vaultOverlay: $('vaultOverlay'),
+  vaultDrawer:  $('vaultDrawer'),
+  vaultBody:    $('vaultBody'),
+  themeBtn:     $('themeBtn'),
+  themeIcon:    $('themeIcon'),
+  providerGrid: $('providerGrid'),
+  histList:     $('histList'),
+  clearHistBtn: $('clearHistBtn'),
+  chainList:    $('chainList'),
+  addStepBtn:   $('addStepBtn'),
+  relayPrompt:  $('relayPrompt'),
+  relayRunBtn:  $('relayRunBtn'),
+  relayResults: $('relayResults'),
+};
+
+// ── STATE ─────────────────────────────────────────────
+const S = {
+  tab:       'all',
+  generating:false,
+  history:   JSON.parse(localStorage.getItem('aiit_h')     || '[]'),
+  vault:     JSON.parse(localStorage.getItem('aiit_vault') || '[]'),
+  prefs:     JSON.parse(localStorage.getItem('aiit_p')     || '{"theme":"dark"}'),
+  chain:     [], // relay chain steps
+  saveH()    { localStorage.setItem('aiit_h',     JSON.stringify(this.history.slice(0,30))); },
+  saveV()    { localStorage.setItem('aiit_vault', JSON.stringify(this.vault.slice(0,50)));   },
+  saveP()    { localStorage.setItem('aiit_p',     JSON.stringify(this.prefs));               },
+};
+
+// ── PROVIDERS ────────────────────────────────────────
+// Each provider: endpoint, default model, CORS-safe with key, get-key URL
+const PROVIDERS = {
+  // ── FREE TIER — no key or free signup ──────────────────────
+  pollinations: {
+    name:'Pollinations', color:'#43E97B', abbr:'PL', tier:'free',
+    label:'FREE · No key needed',
+    endpoint:'https://text.pollinations.ai',
+    model:'mistral', free:true, keyRequired:false,
+    keyUrl:'https://enter.pollinations.ai',
+    keyPlaceholder:'Optional token for higher limits',
+    connectUrl:'https://enter.pollinations.ai',
+    connectSteps:['Visit enter.pollinations.ai','Click "Get Token"','Copy and paste below'],
+    test: async (key) => {
+      const r = await fetch('https://text.pollinations.ai/hi?model=mistral');
+      return r.ok;
+    },
+    call: async (prompt, sys, key) => {
+      const fp  = sys ? `${sys}\n\n[USER REQUEST]: ${prompt}` : prompt;
+      const h   = key ? { 'Authorization': 'Bearer ' + key } : {};
+      const url = `https://text.pollinations.ai/${encodeURIComponent(fp)}?model=mistral&seed=${rand()}`;
+      const r   = await fetch(url, { headers: h });
+      if (!r.ok) throw new Error('Pollinations ' + r.status);
+      return r.text();
+    }
+  },
+  groq: {
+    name:'Groq', color:'#F55036', abbr:'GQ', tier:'free',
+    label:'FREE · 14k tokens/min',
+    endpoint:'https://api.groq.com/openai/v1/chat/completions',
+    model:'llama-3.1-8b-instant', free:true, keyRequired:true,
+    keyUrl:'https://console.groq.com/keys',
+    keyPlaceholder:'gsk_...',
+    connectUrl:'https://console.groq.com/keys',
+    connectSteps:['Sign in with Google or GitHub','Click "Create API Key"','Name it anything, copy the key','Paste it below'],
+    test: async (key) => !!(await oaiCall('https://api.groq.com/openai/v1/chat/completions', key, 'llama-3.1-8b-instant', 'hi', '')),
+    call: async (prompt, sys, key) => oaiCall('https://api.groq.com/openai/v1/chat/completions', key, 'llama-3.1-8b-instant', prompt, sys)
+  },
+  gemini: {
+    name:'Gemini', color:'#4285F4', abbr:'GM', tier:'free',
+    label:'FREE · Google OAuth',
+    endpoint:'https://generativelanguage.googleapis.com',
+    model:'gemini-2.0-flash', free:true, keyRequired:true,
+    keyUrl:'https://aistudio.google.com/app/apikey',
+    keyPlaceholder:'AIza...',
+    connectUrl:'https://aistudio.google.com/app/apikey',
+    connectSteps:['Sign in with your Google account','Click "Create API key"','Copy the key','Paste it below'],
+    test: async (key) => !!(await geminiCall(key, 'hi', '')),
+    call: async (prompt, sys, key) => geminiCall(key, prompt, sys)
+  },
+  openrouter: {
+    name:'OpenRouter', color:'#6C63FF', abbr:'OR', tier:'free',
+    label:'FREE · 200+ models',
+    endpoint:'https://openrouter.ai/api/v1/chat/completions',
+    model:'mistralai/mistral-7b-instruct:free', free:true, keyRequired:true,
+    keyUrl:'https://openrouter.ai/keys',
+    keyPlaceholder:'sk-or-...',
+    connectUrl:'https://openrouter.ai/keys',
+    connectSteps:['Sign in with Google or GitHub','Click "Create Key"','Copy the key','Paste it below'],
+    test: async (key) => !!(await oaiCall('https://openrouter.ai/api/v1/chat/completions', key, 'mistralai/mistral-7b-instruct:free', 'hi', '')),
+    call: async (prompt, sys, key) => oaiCall('https://openrouter.ai/api/v1/chat/completions', key, 'mistralai/mistral-7b-instruct:free', prompt, sys)
+  },
+  mistral: {
+    name:'Mistral', color:'#FF7000', abbr:'MI', tier:'free',
+    label:'FREE tier available',
+    endpoint:'https://api.mistral.ai/v1/chat/completions',
+    model:'mistral-small-latest', free:true, keyRequired:true,
+    keyUrl:'https://console.mistral.ai',
+    keyPlaceholder:'...',
+    connectUrl:'https://console.mistral.ai',
+    connectSteps:['Create account at console.mistral.ai','Go to API Keys section','Create a new key','Paste it below'],
+    test: async (key) => !!(await oaiCall('https://api.mistral.ai/v1/chat/completions', key, 'mistral-small-latest', 'hi', '')),
+    call: async (prompt, sys, key) => oaiCall('https://api.mistral.ai/v1/chat/completions', key, 'mistral-small-latest', prompt, sys)
+  },
+  deepseek: {
+    name:'DeepSeek', color:'#4D6BFE', abbr:'DS', tier:'free',
+    label:'FREE credits on signup',
+    endpoint:'https://api.deepseek.com/v1/chat/completions',
+    model:'deepseek-chat', free:true, keyRequired:true,
+    keyUrl:'https://platform.deepseek.com',
+    keyPlaceholder:'sk-...',
+    connectUrl:'https://platform.deepseek.com/api_keys',
+    connectSteps:['Sign up at platform.deepseek.com','Go to API Keys','Create a key','Paste it below'],
+    test: async (key) => !!(await oaiCall('https://api.deepseek.com/v1/chat/completions', key, 'deepseek-chat', 'hi', '')),
+    call: async (prompt, sys, key) => oaiCall('https://api.deepseek.com/v1/chat/completions', key, 'deepseek-chat', prompt, sys)
+  },
+  xai: {
+    name:'xAI Grok', color:'#1a1a1a', abbr:'XA', tier:'free',
+    label:'FREE tier · X login',
+    endpoint:'https://api.x.ai/v1/chat/completions',
+    model:'grok-beta', free:true, keyRequired:true,
+    keyUrl:'https://console.x.ai',
+    keyPlaceholder:'xai-...',
+    connectUrl:'https://console.x.ai',
+    connectSteps:['Log in with your X (Twitter) account','Go to API Keys','Create a key','Paste it below'],
+    test: async (key) => !!(await oaiCall('https://api.x.ai/v1/chat/completions', key, 'grok-beta', 'hi', '')),
+    call: async (prompt, sys, key) => oaiCall('https://api.x.ai/v1/chat/completions', key, 'grok-beta', prompt, sys)
+  },
+  // ── PAID TIER ───────────────────────────────────────────────
+  openai: {
+    name:'OpenAI', color:'#10A37F', abbr:'OA', tier:'paid',
+    label:'PAID · $5 credit to start',
+    endpoint:'https://api.openai.com/v1/chat/completions',
+    model:'gpt-4o-mini', free:false, keyRequired:true,
+    keyUrl:'https://platform.openai.com/api-keys',
+    keyPlaceholder:'sk-...',
+    connectUrl:'https://platform.openai.com/api-keys',
+    connectSteps:['Sign up at platform.openai.com','Add a payment method (required)','Go to API Keys','Create a new secret key','Paste it below'],
+    test: async (key) => !!(await oaiCall('https://api.openai.com/v1/chat/completions', key, 'gpt-4o-mini', 'hi', '')),
+    call: async (prompt, sys, key) => oaiCall('https://api.openai.com/v1/chat/completions', key, 'gpt-4o-mini', prompt, sys)
+  },
+  anthropic: {
+    name:'Anthropic', color:'#CC785C', abbr:'AN', tier:'paid',
+    label:'PAID · $5 credit to start',
+    endpoint:'https://api.anthropic.com/v1/messages',
+    model:'claude-3-haiku-20240307', free:false, keyRequired:true,
+    keyUrl:'https://console.anthropic.com',
+    keyPlaceholder:'sk-ant-...',
+    connectUrl:'https://console.anthropic.com/settings/keys',
+    connectSteps:['Sign up at console.anthropic.com','Verify your email','Go to API Keys','Create a key','Paste it below'],
+    test: async (key) => !!(await anthropicCall(key, 'hi', '')),
+    call: async (prompt, sys, key) => anthropicCall(key, prompt, sys)
+  },
+};
+
+// ── API HELPERS ──────────────────────────────────────
+const rand = () => Math.floor(Math.random() * 999999);
+const getKey = id => localStorage.getItem(`aiit_key_${id}`) || '';
+const setKey = (id, val) => localStorage.setItem(`aiit_key_${id}`, val);
+
+// Standard OpenAI-compatible POST (works for Groq, Mistral, DeepSeek, OpenRouter, xAI)
+async function oaiCall(endpoint, key, model, prompt, sys) {
+  const messages = [];
+  if (sys) messages.push({ role:'system', content:sys });
+  messages.push({ role:'user', content:prompt });
+  // OpenRouter requires these headers to avoid 403
+  const isOpenRouter = endpoint.includes('openrouter');
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + key,
+    ...(isOpenRouter && {
+      'HTTP-Referer': location.href,
+      'X-Title': 'Harry A.I.'
+    })
+  };
+  const r = await fetch(endpoint, {
+    method:'POST',
+    headers,
+    body:JSON.stringify({ model, messages, max_tokens:2048 })
+  });
+  if (!r.ok) {
+    const txt = await r.text().catch(() => '');
+    throw new Error(`${model} error ${r.status}${txt ? ': '+txt.substring(0,60) : ''}`);
+  }
+  const d = await r.json();
+  return d.choices?.[0]?.message?.content || '';
+}
+
+// Anthropic (different auth header format)
+async function anthropicCall(key, prompt, sys) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key': key,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({
+      model:'claude-3-haiku-20240307',
+      max_tokens:2048,
+      ...(sys && { system: sys }),
+      messages:[{ role:'user', content:prompt }]
+    })
+  });
+  if (!r.ok) throw new Error('Anthropic error ' + r.status);
+  const d = await r.json();
+  return d.content?.[0]?.text || '';
+}
+
+// Google Gemini (different structure)
+async function geminiCall(key, prompt, sys) {
+  // Gemini requires x-goog-api-key header (per 2026 API docs)
+  // Key also passed as query param as fallback
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+  const body = {
+    contents:[{ parts:[{ text: sys ? `${sys}\n\n${prompt}` : prompt }] }],
+    generationConfig:{ maxOutputTokens:2048 }
+  };
+  const r = await fetch(url, {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-goog-api-key': key,
+    },
+    body:JSON.stringify(body)
+  });
+  if (!r.ok) {
+    const errText = await r.text().catch(() => r.status.toString());
+    throw new Error('Gemini ' + r.status + ': ' + errText.substring(0,80));
+  }
+  const d = await r.json();
+  return d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+// Get connected provider (has key or is free-no-key)
+function getConnectedProviders() {
+  return Object.entries(PROVIDERS).filter(([id, p]) => {
+    if (!p.keyRequired) return true;
+    return !!getKey(id);
+  }).map(([id, p]) => ({ id, ...p, key: getKey(id) }));
+}
+
+// Best provider for a given task
+function pickProvider(preferredId) {
+  const connected = getConnectedProviders();
+  if (!connected.length) return null;
+  if (preferredId) {
+    const found = connected.find(p => p.id === preferredId);
+    if (found) return found;
+  }
+  // Priority: groq (fastest) > openai > anthropic > gemini > others > pollinations
+  const priority = ['groq','openai','anthropic','gemini','mistral','deepseek','openrouter','xai','pollinations'];
+  for (const id of priority) {
+    const found = connected.find(p => p.id === id);
+    if (found) return found;
+  }
+  return connected[0];
+}
+
+// ── SYSTEM PROMPTS ───────────────────────────────────
+const SYS = {
+  code:     'Return ONLY a complete self-contained HTML file with inline CSS and JS. No markdown, no explanations.',
+  music:    'You are a professional songwriter. Write complete lyrics with labeled sections and production notes.',
+  slides:   'Create a numbered slide outline. Each slide: title, 3-4 bullets, speaker notes.',
+  reason:   'Think step by step. Number every step. Show all reasoning.',
+  translate:'Direct translation first, then nuances and cultural context on a new line.',
+};
+
+// ── UNIFIED REQUEST ──────────────────────────────────
+async function callProvider(provider, prompt, sys) {
+  return provider.call(prompt, sys || '', provider.key || getKey(provider.id));
+}
+
+async function unifiedRequest(prompt, mode) {
+  // Images: always Pollinations img.src
+  if (mode === 'image') {
+    const isLandscape = /landscape|wide|banner|wallpaper|panorama/i.test(prompt);
+    const isPortrait  = /portrait|tall|poster|phone|vertical|story/i.test(prompt);
+    const [w,h] = isLandscape ? [1024,576] : isPortrait ? [576,1024] : [768,768];
+    return { type:'image', url:`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=flux&width=${w}&height=${h}&seed=${rand()}` };
+  }
+  // Audio: Pollinations TTS
+  if (mode === 'audio' || mode === 'speech') {
+    const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai-audio&voice=nova&seed=${rand()}`;
+    const r   = await fetch(url);
+    if (!r.ok) throw new Error('Audio failed');
+    return { type:'audio', blobUrl: URL.createObjectURL(await r.blob()) };
+  }
+  // Text: use best connected provider
+  const provider = pickProvider(null);
+  if (!provider) throw new Error('No AI providers connected. Go to Connect tab to add a key.');
+  const sys = SYS[mode] || '';
+  const text = await callProvider(provider, prompt, sys);
+  return { type:'text', text, provider };
+}
+
+// ── SMART ROUTING ────────────────────────────────────
+function resolveMode(tab, prompt) {
+  let mode = tab;
+  if (tab === 'all') {
+    const p = prompt.toLowerCase();
+    if (/draw|image|picture|generate a photo|photo of|painting|illustration|render|visualize/.test(p)) mode = 'image';
+    else if (/song|lyrics|music|melody|beat|jingle/.test(p)) mode = 'music';
+    else if (/translate|translation|in (spanish|french|german|chinese|japanese|arabic)/.test(p)) mode = 'translate';
+    else if (/why|how does|explain|step.by.step|reason|solve|calculate/.test(p)) mode = 'reason';
+    else if (/code|build|create.*app|program|function|script/.test(p)) mode = 'code';
+  }
+  return mode;
+}
+
+// ── MARKDOWN ─────────────────────────────────────────
+function md(text) {
+  let h = text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/```[\w]*\n?([\s\S]*?)```/g,'<pre>$1</pre>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g,'<em>$1</em>')
+    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/^---+$/gm,'<hr>')
+    .replace(/^[-*] (.+)$/gm,'<li>$1</li>').replace(/^\d+\. (.+)$/gm,'<li>$1</li>')
+    .replace(/\n/g,'<br>');
+  h = h.replace(/(<li>[\s\S]*?<\/li>)(<br>(<li>[\s\S]*?<\/li>))*/g, m => `<ul>${m.replace(/<br>/g,'')}</ul>`);
+  return h;
+}
+
+// ── CARD BUILDER ─────────────────────────────────────
+let cardSeq = 0;
+function makeCard(feed, label, color, providerName) {
+  const id = 'fc' + (++cardSeq);
+  const card = document.createElement('div');
+  card.className = 'feed-card'; card.id = id;
+  card.innerHTML = `
+    <div class="fc-head">
+      <div class="fc-label">
+        <div class="fc-dot" style="background:${color}"></div>
+        <span style="color:${color}">${label}</span>
+        ${providerName ? `<span style="color:var(--t3);font-size:10px;font-weight:400">${providerName}</span>` : ''}
+      </div>
+      <div class="fc-actions">
+        <button class="fc-btn" data-star="${id}">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1l1.8 5.4H15l-4.5 3.2 1.7 5.4L8 11.9l-4.2 3.1 1.7-5.4L1 6.4h5.2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="fc-btn" data-close="${id}">
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="${id}-body"><div class="shimmer" style="height:60px;margin:13px"></div></div>
+    <div class="fc-foot" id="${id}-foot" style="display:none">
+      <span class="fc-act" data-copy="${id}">⎘ Copy</span>
+    </div>`;
+  feed.prepend(card);
+  return id;
+}
+
+function cardDone(id, result, prompt) {
+  const body = $(`${id}-body`); const foot = $(`${id}-foot`);
+  const dot  = document.querySelector(`#${id} .fc-dot`);
+  if (dot) { dot.style.animation = 'none'; dot.style.opacity = '1'; }
+  if (!body || !foot) return;
+
+  if (result.type === 'image') {
+    body.innerHTML = `<div class="fc-img-loading" id="${id}-imgwrap"><div class="spin" style="border-top-color:var(--cor2)"></div><span>Generating image…</span></div>`;
+    const img = document.createElement('img');
+    img.style.cssText = 'width:100%;display:block;';
+    img.alt = prompt;
+    img.onload = () => {
+      const w = $(`${id}-imgwrap`);
+      if (w) { w.className='fc-img'; w.innerHTML=''; w.appendChild(img); }
+      foot.style.display = 'flex';
+      const dlA = document.createElement('a');
+      dlA.href=result.url; dlA.download='aiit.jpg'; dlA.target='_blank';
+      dlA.className='fc-act dl-btn'; dlA.style.textDecoration='none'; dlA.textContent='⬇ Save';
+      foot.prepend(dlA);
+      const starBtn = document.querySelector(`#${id} [data-star]`);
+      if (starBtn) starBtn.dataset.imgUrl = result.url;
+    };
+    img.onerror = () => { if(body) body.innerHTML='<div class="fc-body fc-text" style="color:var(--cor2)">Image failed — tap retry or check your prompt.</div>'; };
+    img.src = result.url;
+    return;
+  }
+
+  if (result.type === 'audio') {
+    const audio = document.createElement('audio');
+    audio.controls=true; audio.src=result.blobUrl;
+    audio.style.cssText='width:100%;display:block;padding:13px;';
+    body.innerHTML = ''; body.appendChild(audio);
+    foot.style.display='flex';
+    return;
+  }
+
+  // Text
+  const clean = result.text.replace(/^```[\w]*\n?/m,'').replace(/\n?```$/m,'').trim();
+  const isHTML = new RegExp('<html|<body|<div|<style|<scr'+'ipt|<!DOCTYPE','i').test(clean);
+  body.innerHTML = `<div class="fc-body fc-text">${md(result.text)}</div>`;
+  foot.style.display = 'flex';
+  if (isHTML) {
+    const runBtn = document.createElement('button'); runBtn.className='run-btn'; runBtn.textContent='▶ Run';
+    runBtn.dataset.code = encodeURIComponent(clean); foot.prepend(runBtn);
+    const dlBtn = document.createElement('button'); dlBtn.className='dl-btn'; dlBtn.textContent='⬇ Download';
+    dlBtn.addEventListener('click', () => {
+      const blob = new Blob([clean],{type:'text/html'});
+      const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='aiit-creation.html'; a.click();
+    });
+    foot.prepend(dlBtn);
+  }
+}
+
+function cardFail(id, msg) {
+  const body = $(`${id}-body`); const dot = document.querySelector(`#${id} .fc-dot`);
+  if (dot) { dot.style.background='var(--coral)'; dot.style.animation='none'; }
+  if (body) body.innerHTML = `<div class="fc-body fc-text" style="color:var(--cor2);font-size:13px">⚠ ${msg}</div>`;
+}
+
+// ── DELEGATED CARD CLICKS ────────────────────────────
+document.addEventListener('click', e => {
+  const closeBtn = e.target.closest('[data-close]');
+  if (closeBtn) { $( closeBtn.dataset.close)?.remove(); return; }
+
+  const copyBtn = e.target.closest('[data-copy]');
+  if (copyBtn) {
+    const b = $(`${copyBtn.dataset.copy}-body`);
+    if (b) { navigator.clipboard?.writeText(b.innerText||b.textContent); const o=copyBtn.textContent; copyBtn.textContent='Copied!'; setTimeout(()=>copyBtn.textContent=o,1500); }
+    return;
+  }
+
+  const starBtn = e.target.closest('[data-star]');
+  if (starBtn) {
+    const id  = starBtn.dataset.star;
+    const body= $(`${id}-body`);
+    const txt = body ? (body.innerText||'').substring(0,200) : '';
+    S.vault.unshift({ type: S.tab, prompt: UI.mainTa?.value||'', content:txt, imgUrl:starBtn.dataset.imgUrl||null, date:new Date().toLocaleDateString() });
+    S.saveV(); renderVault();
+    starBtn.classList.add('starred'); setTimeout(()=>starBtn.classList.remove('starred'),2000);
+    return;
+  }
+
+  const runBtn = e.target.closest('.run-btn');
+  if (runBtn) {
+    const card = runBtn.closest('.feed-card');
+    const existing = card?.querySelector('iframe');
+    if (existing) { existing.remove(); runBtn.textContent='▶ Run'; return; }
+    const frame = document.createElement('iframe');
+    frame.sandbox='allow-scripts allow-same-origin';
+    frame.style.cssText='width:100%;height:420px;display:block;border:none;background:#fff;';
+    const code = decodeURIComponent(runBtn.dataset.code);
+    frame.srcdoc = code;
+    card.appendChild(frame); runBtn.textContent='✕ Close';
+  }
+});
+
+// ── CREATE HANDLER ───────────────────────────────────
+async function handleCreate() {
+  const prompt = UI.mainTa.value.trim(); if (!prompt) return;
+  if (S.generating) return;
+  S.generating = true; UI.createBtn.disabled=true; UI.createBtn.textContent='...';
+
+  const mode    = resolveMode(S.tab, prompt);
+  const color   = {image:'var(--cor2)',code:'var(--sky2)',audio:'var(--amb2)',music:'var(--amb2)',reason:'var(--sky2)',translate:'var(--amb2)'}[mode] || 'var(--ind2)';
+  const label   = mode.charAt(0).toUpperCase() + mode.slice(1);
+  const provider = pickProvider(null);
+  const cid = makeCard(UI.homeFeed, label, color, provider?.name || '');
+
+  S.history.unshift({ type:label, q:prompt, ts:Date.now() }); S.saveH();
+  UI.clearFeedBtn.style.display = 'block';
+  UI.mainTa.value = ''; UI.mainTa.style.height = 'auto';
+
+  try {
+    const result = await unifiedRequest(prompt, mode);
+    cardDone(cid, result, prompt);
+  } catch(err) {
+    cardFail(cid, err.message);
+  } finally {
+    S.generating = false; UI.createBtn.disabled=false; UI.createBtn.textContent='CREATE';
+  }
+}
+
+// ── RELAY CHAIN ──────────────────────────────────────
+const PROVIDER_OPTS = Object.entries(PROVIDERS).map(([id,p]) =>
+  `<option value="${id}">${p.name}</option>`).join('');
+
+function addChainStep(provId, instruction) {
+  const idx  = S.chain.length;
+  const prov = provId || 'pollinations';
+  const P    = PROVIDERS[prov];
+  S.chain.push({ provider: prov, instruction: instruction || '' });
+
+  const wrap = document.createElement('div');
+  wrap.className = 'chain-step'; wrap.dataset.idx = idx;
+
+  if (idx > 0) {
+    const arrow = document.createElement('div');
+    arrow.className = 'chain-arrow'; arrow.textContent = '↓';
+    wrap.appendChild(arrow);
+  }
+
+  const card = document.createElement('div'); card.className = 'step-card';
+  card.innerHTML = `
+    <div class="step-num" style="background:${P?.color||'var(--indigo)'}22;color:${P?.color||'var(--indigo)'}">${idx+1}</div>
+    <div style="flex:1">
+      <select class="step-model-sel" data-step="${idx}">
+        ${Object.entries(PROVIDERS).map(([id,p]) =>
+          `<option value="${id}" ${id===prov?'selected':''}>${p.name}</option>`
+        ).join('')}
+      </select>
+      <input class="step-instruction" data-step-inst="${idx}" placeholder="Optional instruction for this AI… (leave blank to continue the chain)" value="${instruction||''}">
+    </div>
+    <button class="step-del" data-del="${idx}">
+      <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>`;
+  wrap.appendChild(card);
+  UI.chainList.appendChild(wrap);
+
+  // Wire select
+  card.querySelector(`[data-step="${idx}"]`).addEventListener('change', e => {
+    S.chain[idx].provider = e.target.value;
+    const col = PROVIDERS[e.target.value]?.color || 'var(--indigo)';
+    card.querySelector('.step-num').style.background = col + '22';
+    card.querySelector('.step-num').style.color = col;
+  });
+  card.querySelector(`[data-step-inst="${idx}"]`).addEventListener('input', e => {
+    S.chain[idx].instruction = e.target.value;
+  });
+  card.querySelector(`[data-del="${idx}"]`).addEventListener('click', () => {
+    S.chain.splice(idx, 1);
+    rebuildChainUI();
+  });
+}
+
+function rebuildChainUI() {
+  const saved = [...S.chain];
+  S.chain = []; UI.chainList.innerHTML = '';
+  saved.forEach(step => addChainStep(step.provider, step.instruction));
+}
+
+async function runRelay() {
+  const startPrompt = UI.relayPrompt.value.trim();
+  if (!startPrompt) { alert('Add a starting prompt first.'); return; }
+  if (S.chain.length < 1) { alert('Add at least one AI to the chain.'); return; }
+
+  UI.relayRunBtn.disabled = true; UI.relayRunBtn.textContent = 'Running chain...';
+  UI.relayResults.style.display = 'block';
+  UI.relayResults.innerHTML = '';
+
+  let currentInput = startPrompt;
+
+  for (let i = 0; i < S.chain.length; i++) {
+    const step  = S.chain[i];
+    const prov  = PROVIDERS[step.provider];
+    const color = prov?.color || 'var(--indigo)';
+
+    // Connector line between steps
+    if (i > 0) {
+      const conn = document.createElement('div'); conn.className = 'relay-connector';
+      conn.innerHTML = '<div class="connector-line"></div><div class="connector-dot"></div><div class="connector-line"></div>';
+      UI.relayResults.appendChild(conn);
+    }
+
+    // Step card
+    const stepCard = document.createElement('div'); stepCard.className = 'relay-step-card';
+    const stepId = 'relay-step-' + i;
+    stepCard.innerHTML = `
+      <div class="rsc-head">
+        <div class="rsc-avatar" style="background:${color}22;color:${color}">${prov?.abbr||'AI'}</div>
+        <span class="rsc-name">${prov?.name||step.provider}</span>
+        ${step.instruction ? `<span style="font-size:10px;color:var(--t3);margin-left:4px">"${step.instruction.substring(0,30)}${step.instruction.length>30?'…':''}"</span>` : ''}
+        <span class="rsc-status rsc-running" id="${stepId}-status">Running…</span>
+      </div>
+      <div class="rsc-body" id="${stepId}-body"><div class="shimmer" style="height:40px;border-radius:8px"></div></div>`;
+    UI.relayResults.appendChild(stepCard);
+    stepCard.scrollIntoView({ behavior:'smooth', block:'nearest' });
+
+    try {
+      const key  = getKey(step.provider);
+      if (prov.keyRequired && !key) throw new Error(`No key for ${prov.name} — go to Connect tab`);
+
+      // Build the prompt for this step
+      const instruction = step.instruction || (i === 0 ? '' : 'Continue based on the previous response. Build on it.');
+      const prompt = instruction
+        ? `${instruction}\n\nPrevious AI response:\n${currentInput}`
+        : currentInput;
+
+      const text = await prov.call(prompt, '', key);
+      currentInput = text; // pass output to next step
+
+      $(`${stepId}-body`).innerHTML = `<div style="font-size:13.5px;color:var(--t2);line-height:1.75">${md(text)}</div>`;
+      $(`${stepId}-status`).className = 'rsc-status rsc-done'; $(`${stepId}-status`).textContent = 'Done';
+
+    } catch(err) {
+      $(`${stepId}-body`).innerHTML = `<div style="color:var(--cor2);font-size:13px">⚠ ${err.message}</div>`;
+      $(`${stepId}-status`).className = 'rsc-status rsc-error'; $(`${stepId}-status`).textContent = 'Error';
+      break; // stop chain on error
+    }
+  }
+
+  // Final result summary card
+  const summary = document.createElement('div');
+  summary.style.cssText = 'margin-top:16px;padding:12px 13px;background:rgba(255,110,199,.06);border:1px solid rgba(255,110,199,.2);border-radius:var(--r)';
+  summary.innerHTML = `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--pnk2);margin-bottom:8px">Chain complete — Final output</div><div style="font-size:13px;color:var(--t2);line-height:1.7">${md(currentInput.substring(0,500))}${currentInput.length>500?'…':''}</div>
+  <div style="margin-top:10px;display:flex;gap:8px">
+    <button onclick="navigator.clipboard.writeText(${JSON.stringify(currentInput).replace(/</g,'\\u003c')})" style="padding:6px 12px;border-radius:8px;background:var(--bg3);border:1px solid var(--bdr);color:var(--t2);font-size:12px;cursor:pointer">⎘ Copy final</button>
+  </div>`;
+  UI.relayResults.appendChild(summary);
+
+  // Save to history
+  S.history.unshift({ type:'Relay chain', q:startPrompt, ts:Date.now() }); S.saveH();
+
+  UI.relayRunBtn.disabled=false; UI.relayRunBtn.textContent='▶ Run Chain';
+}
+
+// ── CONNECT PAGE ─────────────────────────────────────
+function renderConnectPage() {
+  UI.providerGrid.innerHTML = '';
+
+  // Section headers
+  let lastTier = null;
+
+  Object.entries(PROVIDERS).forEach(([id, p]) => {
+    const savedKey    = getKey(id);
+    const isConnected = p.keyRequired ? !!savedKey : true;
+
+    // Section divider
+    if (p.tier !== lastTier) {
+      lastTier = p.tier;
+      const div = document.createElement('div');
+      div.style.cssText = 'font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--t3);padding:2px 2px 6px;font-weight:600;margin-top:' + (p.tier==='paid'?'8px':'0');
+      div.textContent = p.tier === 'free' ? '✦ Free Tier' : '★ Paid Tier';
+      UI.providerGrid.appendChild(div);
+    }
+
+    const card = document.createElement('div');
+    card.className = 'provider-card' + (isConnected ? ' connected' : '');
+    card.id = 'pc-' + id;
+
+    card.innerHTML = `
+      <div class="pc-head">
+        <div class="pc-logo" style="background:${p.color}">${p.abbr}</div>
+        <div style="flex:1">
+          <div class="pc-name">${p.name}</div>
+          <div class="pc-model">${p.label}</div>
+        </div>
+        <div class="pc-status ${isConnected?'on':'off'}" id="pc-dot-${id}"></div>
+      </div>
+      <div class="pc-body" id="pc-body-${id}">
+        ${p.keyRequired ? `
+        <div class="pc-key-row">
+          <input type="password" class="pc-key-input" id="pc-input-${id}"
+            placeholder="${p.keyPlaceholder}"
+            value="${savedKey}">
+          <button class="pc-save-btn" id="pc-save-${id}">Save</button>
+        </div>
+        <div class="pc-btn-row">
+          <button class="pc-connect-btn" id="pc-connect-${id}">
+            <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Connect
+          </button>
+          <button class="pc-test-btn" id="pc-test-${id}">Test</button>
+          <a href="${p.keyUrl}" target="_blank" class="pc-get-link">Docs →</a>
+        </div>
+        <div class="pc-steps" id="pc-steps-${id}" style="display:none">
+          ${p.connectSteps.map((s,i) => `<div class="pc-step"><span class="pc-step-num">${i+1}</span>${s}</div>`).join('')}
+          <div class="pc-clipboard-hint" id="pc-clip-${id}" style="display:none">
+            <div class="clip-pulse"></div>Watching clipboard for your key…
+          </div>
+        </div>
+        <div class="pc-msg" id="pc-msg-${id}"></div>
+        ` : `
+        <div class="pc-btn-row">
+          <span style="font-size:12px;color:var(--mnt2)">✓ Always connected — no key needed</span>
+          <a href="${p.keyUrl}" target="_blank" class="pc-get-link">Learn more →</a>
+        </div>
+        <div class="pc-msg" id="pc-msg-${id}"></div>
+        `}
+      </div>`;
+
+    UI.providerGrid.appendChild(card);
+
+    if (!p.keyRequired) {
+      // Test for free providers
+      const testFreeBtn = document.createElement('button');
+      testFreeBtn.className = 'pc-test-btn';
+      testFreeBtn.style.cssText = 'margin:0 0 10px 0;width:auto;';
+      testFreeBtn.textContent = 'Test connection';
+      card.querySelector('.pc-btn-row').appendChild(testFreeBtn);
+      testFreeBtn.addEventListener('click', async () => {
+        const msg = $('pc-msg-' + id);
+        testFreeBtn.textContent = 'Testing…'; testFreeBtn.disabled = true;
+        try {
+          await p.test('');
+          showMsg(id, 'ok', '✓ Connected and working!');
+          $('pc-dot-' + id).className = 'pc-status on';
+        } catch(e) {
+          showMsg(id, 'err', '✗ ' + e.message.substring(0,60));
+        } finally { testFreeBtn.textContent = 'Test connection'; testFreeBtn.disabled = false; }
+      });
+      return;
+    }
+
+    // Save button
+    $('pc-save-' + id)?.addEventListener('click', () => {
+      const val = $('pc-input-' + id).value.trim();
+      setKey(id, val);
+      const dot   = $('pc-dot-'  + id);
+      const cardEl= $('pc-'      + id);
+      if (val) {
+        dot.className = 'pc-status on'; cardEl.classList.add('connected');
+        showMsg(id, 'ok', 'Key saved.');
+        stopClipboardWatch(id);
+      } else {
+        dot.className = 'pc-status off'; cardEl.classList.remove('connected');
+      }
+      updateStatusPill();
+    });
+
+    // Connect button — opens key page + starts clipboard watch
+    $('pc-connect-' + id)?.addEventListener('click', () => {
+      const steps = $('pc-steps-' + id);
+      const btn   = $('pc-connect-' + id);
+      const isOpen = steps.style.display !== 'none';
+
+      if (isOpen) {
+        steps.style.display = 'none';
+        btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> Connect';
+        stopClipboardWatch(id);
+      } else {
+        steps.style.display = 'block';
+        btn.innerHTML = '✕ Close guide';
+        // Open their key page in a new tab
+        window.open(p.connectUrl, '_blank', 'width=1000,height=700');
+        // Start watching clipboard for the key
+        startClipboardWatch(id, p);
+      }
+    });
+
+    // Test button
+    $('pc-test-' + id)?.addEventListener('click', async () => {
+      const key = $('pc-input-' + id).value.trim() || getKey(id);
+      const btn = $('pc-test-' + id);
+      if (!key) { showMsg(id, 'err', 'Paste a key first.'); return; }
+      btn.textContent = 'Testing…'; btn.disabled = true;
+      try {
+        await p.test(key);
+        showMsg(id, 'ok', '✓ Working! Responses will be fast.');
+        $('pc-dot-' + id).className = 'pc-status on';
+        $('pc-' + id).classList.add('connected');
+        setKey(id, key);
+        updateStatusPill();
+      } catch(e) {
+        showMsg(id, 'err', '✗ ' + e.message.substring(0,70));
+      } finally { btn.textContent = 'Test'; btn.disabled = false; }
+    });
+  });
+}
+
+// Clipboard polling — watches for key pattern after user copies from provider page
+const clipWatchers = {};
+function startClipboardWatch(id, provider) {
+  const hint = $('pc-clip-' + id);
+  if (hint) hint.style.display = 'flex';
+
+  // Key patterns per provider
+  const patterns = {
+    groq:       /^gsk_[A-Za-z0-9]{40,}/,
+    openai:     /^sk-[A-Za-z0-9]{40,}/,
+    anthropic:  /^sk-ant-[A-Za-z0-9\-_]{80,}/,
+    gemini:     /^AIza[A-Za-z0-9\-_]{35,}/,
+    mistral:    /^[A-Za-z0-9]{32,}/,
+    deepseek:   /^sk-[A-Za-z0-9]{32,}/,
+    openrouter: /^sk-or-v1-[A-Za-z0-9]{60,}/,
+    xai:        /^xai-[A-Za-z0-9]{40,}/,
+    openai_pay: /^sk-proj-[A-Za-z0-9\-_]{80,}/,
+  };
+
+  const pattern = patterns[id] || patterns.openai;
+  let lastClip = '';
+
+  clipWatchers[id] = setInterval(async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text === lastClip) return;
+      lastClip = text;
+      const trimmed = text.trim();
+      if (pattern.test(trimmed)) {
+        // Found a matching key!
+        const input = $('pc-input-' + id);
+        if (input) {
+          input.value = trimmed;
+          input.style.borderColor = 'var(--mint)';
+          setTimeout(() => input.style.borderColor = '', 2000);
+        }
+        showMsg(id, 'ok', 'Key detected from clipboard! Hit Save to confirm.');
+        stopClipboardWatch(id);
+        if (hint) hint.style.display = 'none';
+      }
+    } catch { /* clipboard permission not granted — silent fail */ }
+  }, 1500);
+}
+
+function stopClipboardWatch(id) {
+  if (clipWatchers[id]) { clearInterval(clipWatchers[id]); delete clipWatchers[id]; }
+  const hint = $('pc-clip-' + id);
+  if (hint) hint.style.display = 'none';
+}
+
+function showMsg(id, type, text) {
+  const msg = $('pc-msg-' + id); if (!msg) return;
+  msg.className = 'pc-msg ' + type; msg.textContent = text;
+  setTimeout(() => { if(msg) msg.className = 'pc-msg'; }, 4000);
+}
+
+
+function updateStatusPill() {
+  const connected = getConnectedProviders();
+  UI.statusTxt.textContent = connected.length + ' provider' + (connected.length!==1?'s':'') + ' connected';
+}
+
+// ── VAULT ────────────────────────────────────────────
+function renderVault() {
+  if (!S.vault.length) { UI.vaultBody.innerHTML='<div class="vault-empty">Nothing saved yet.<br>Tap ⭐ on any result.</div>'; return; }
+  UI.vaultBody.innerHTML = S.vault.map((v,i) => `
+    <div class="vault-card" data-vidx="${i}">
+      <div class="vault-type">${v.type} · ${v.date}</div>
+      ${v.imgUrl ? `<img src="${v.imgUrl}" class="vault-img-thumb" alt="">` : ''}
+      <div class="vault-q">"${(v.prompt||'').substring(0,80)}"</div>
+    </div>`).join('');
+}
+const openVault  = () => { renderVault(); UI.vaultDrawer.classList.add('open'); UI.vaultOverlay.classList.add('open'); };
+const closeVault = () => { UI.vaultDrawer.classList.remove('open'); UI.vaultOverlay.classList.remove('open'); };
+UI.vaultOpenBtn.addEventListener('click', openVault);
+UI.vaultCloseBtn.addEventListener('click', closeVault);
+UI.vaultOverlay.addEventListener('click', closeVault);
+
+// ── HISTORY ──────────────────────────────────────────
+function ago(ts) {
+  const s=Math.floor((Date.now()-ts)/1000);
+  return s<60?'just now':s<3600?Math.floor(s/60)+'m ago':s<86400?Math.floor(s/3600)+'h ago':Math.floor(s/86400)+'d ago';
+}
+function renderHistory() {
+  if (!S.history.length) { UI.histList.innerHTML='<div class="empty">No history yet.</div>'; return; }
+  UI.histList.innerHTML = S.history.map(h => `
+    <div class="hist-card">
+      <div class="hist-type">${h.type}</div>
+      <div class="hist-q">${h.q.substring(0,80)}${h.q.length>80?'…':''}</div>
+      <div class="hist-ts">${ago(h.ts)}</div>
+    </div>`).join('');
+}
+UI.clearHistBtn.addEventListener('click', () => { S.history=[]; S.saveH(); renderHistory(); });
+
+// ── THEME ────────────────────────────────────────────
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  S.prefs.theme=t; S.saveP();
+  const icon = UI.themeIcon; if (!icon) return;
+  icon.innerHTML = t==='light'
+    ? '<circle cx="10" cy="10" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.3 4.3l1.4 1.4M13.3 13.3l1.4 1.4M4.3 15.7l1.4-1.4M13.3 6.7l1.4-1.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>'
+    : '<path d="M10 2a8 8 0 100 16A8 8 0 0010 2z" stroke="currentColor" stroke-width="1.5"/><path d="M10 6a4 4 0 000 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>';
+}
+UI.themeBtn.addEventListener('click', () => applyTheme(S.prefs.theme==='dark'?'light':'dark'));
+
+// ── NAVIGATION ───────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  $(id)?.classList.add('active');
+  window.scrollTo(0,0);
+}
+function setNav(id) {
+  document.querySelectorAll('.ni').forEach(n=>{n.classList.remove('on');n.querySelector('.nlbl').style.color='';});
+  const el=$(id); if(!el) return;
+  el.classList.add('on'); el.querySelector('.nlbl').style.color='var(--ind2)';
+}
+
+$('ni-home').addEventListener('click', ()=>{ showPage('page-home'); setNav('ni-home'); });
+$('ni-relay').addEventListener('click', ()=>{ showPage('page-relay'); setNav('ni-relay'); });
+$('ni-connect').addEventListener('click', ()=>{ showPage('page-connect'); setNav('ni-connect'); renderConnectPage(); });
+$('ni-history').addEventListener('click', ()=>{ showPage('page-history'); setNav('ni-history'); renderHistory(); });
+
+// ── MODE TABS ────────────────────────────────────────
+const PLACEHOLDERS = {
+  all:      'Describe what you want to create\u2026',
+  image:    'Describe the image you want to generate\u2026',
+  code:     'Describe the app or tool you want to build\u2026',
+  audio:    'Paste text to convert to speech\u2026',
+  speech:   'Paste text to speak aloud\u2026',
+  music:    'Describe the song \u2014 genre, mood, occasion\u2026',
+  translate:'Paste text to translate\u2026',
+  reason:   'Ask a complex question\u2026',
+  relay:    'Go to the Relay tab to build AI chains\u2026',
+};
+
+UI.modeTabs.addEventListener('click', e => {
+  const tab = e.target.closest('.mode-tab'); if (!tab) return;
+  document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  S.tab = tab.dataset.mode;
+  UI.mainTa.placeholder = PLACEHOLDERS[S.tab] || PLACEHOLDERS.all;
+  if (S.tab === 'relay') { showPage('page-relay'); setNav('ni-relay'); }
+});
+
+// ── HOME ACTIONS ─────────────────────────────────────
+UI.createBtn.addEventListener('click', handleCreate);
+UI.mainTa.addEventListener('keydown', e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();handleCreate();} });
+UI.mainTa.addEventListener('input', function(){ this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,120)+'px'; });
+UI.clearFeedBtn.addEventListener('click', ()=>{ UI.homeFeed.innerHTML=''; UI.clearFeedBtn.style.display='none'; });
+
+// Improve prompt
+UI.improveBtn.addEventListener('click', async () => {
+  const val = UI.mainTa.value.trim(); if (!val) return;
+  UI.mainTa.value = 'Polishing\u2026';
+  try {
+    const p = pickProvider(null);
+    if (!p) { UI.mainTa.value = val; return; }
+    const improved = await p.call(
+      'Rewrite this as a detailed specific AI prompt, return only the improved prompt text: ' + val, '', p.key||getKey(p.id)
+    );
+    UI.mainTa.value = improved.trim();
+  } catch { UI.mainTa.value = val; }
+  UI.mainTa.style.height='auto'; UI.mainTa.style.height=Math.min(UI.mainTa.scrollHeight,120)+'px';
+});
+
+// ── RELAY WIRING ─────────────────────────────────────
+UI.addStepBtn.addEventListener('click', () => addChainStep('pollinations',''));
+UI.relayRunBtn.addEventListener('click', runRelay);
+
+// Seed chain with 2 default steps
+addChainStep('pollinations', '');
+addChainStep('groq', 'Now critique and improve the response above');
+
+// ── MOBILE KEYBOARD FIX ──────────────────────────────
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => {
+    const offset = window.innerHeight - window.visualViewport.height;
+    document.querySelector('.bnav').style.transform = `translateX(-50%) translateY(${offset}px)`;
+  });
+}
+
+// ── INIT ─────────────────────────────────────────────
+applyTheme(S.prefs.theme || 'dark');
+updateStatusPill();
+
+// Warn if opened as file:// — API calls won't work
+if (location.protocol === 'file:') {
+  const warn = document.createElement('div');
+  warn.style.cssText = 'margin:0 14px 10px;padding:10px 13px;background:rgba(255,179,71,.1);border:1px solid rgba(255,179,71,.3);border-radius:12px;font-size:12px;color:var(--amb2);line-height:1.5;';
+  warn.innerHTML = '<strong>⚠ Opened as a local file.</strong> AI calls need a real URL to work.<br>Host on GitHub Pages or run <code style="background:rgba(0,0,0,.2);padding:1px 5px;border-radius:4px">npx serve .</code> locally.';
+  UI.homeFeed.before(warn);
+}
+console.log('Harry A.I. v19: GitHub Pages ready \u2705');
+
+}); // end DOMContentLoaded
+</script>
+</body>
+</html>
