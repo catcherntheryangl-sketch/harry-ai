@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Harry A.I. — Multi-provider AI studio",
   "main": "main.js",
+  "author": "catcherntheryangl-sketch",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --win --x64"
@@ -11,23 +12,19 @@
     "appId": "com.harryai.app",
     "productName": "Harry A.I.",
     "win": {
-      "target": "nsis",
-      "icon": "icon.ico"
+      "target": "nsis"
     },
     "nsis": {
-      "installerName": "HarryAI-Setup",
       "shortcutName": "Harry A.I.",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
     "files": [
       "main.js",
-      "index.html",
-      "icon.ico"
+      "index.html"
     ]
   },
   "devDependencies": {
     "electron": "^28.0.0",
     "electron-builder": "^24.0.0"
   }
-}
