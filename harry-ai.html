@@ -128,6 +128,11 @@ input,textarea,button{font-family:'Outfit',sans-serif;}
 .step-instruction::placeholder{color:var(--t3);}
 .step-del{width:26px;height:26px;border-radius:7px;border:none;background:transparent;color:var(--t3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .step-del:active{background:rgba(255,107,107,.1);color:var(--cor2);}
+.preset-grid{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+.preset-pill{padding:7px 14px;border-radius:20px;background:rgba(255,110,199,.08);border:1px solid rgba(255,110,199,.2);color:var(--pnk2);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+.preset-pill:active,.preset-pill.active{background:rgba(255,110,199,.2);border-color:rgba(255,110,199,.5);}
+.relay-restart-btn{width:100%;padding:11px;background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--r);color:var(--t2);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:10px;display:none;}
+.relay-restart-btn:active{background:var(--bg4);}
 .add-step-btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;background:var(--bg2);border:1px dashed rgba(255,110,199,.25);border-radius:var(--r);cursor:pointer;font-size:13px;color:var(--pnk2);margin-bottom:12px;}
 .add-step-btn:active{background:var(--bg3);}
 .relay-run-btn{width:100%;padding:14px;background:var(--pink);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(255,110,199,.4);transition:transform .12s,opacity .2s;}
@@ -253,13 +258,10 @@ input,textarea,button{font-family:'Outfit',sans-serif;}
 
   <div class="mode-tabs" id="modeTabs">
     <div class="mode-tab active" data-mode="all">✦ All</div>
+    <div class="mode-tab" data-mode="video">📹 Video</div>
     <div class="mode-tab" data-mode="image">🖼 Image</div>
     <div class="mode-tab" data-mode="code">⌨ Code</div>
-    <div class="mode-tab" data-mode="audio">🔊 Audio</div>
-    <div class="mode-tab" data-mode="music">🎵 Music</div>
-    <div class="mode-tab" data-mode="reason">🧠 Reason</div>
-    <div class="mode-tab" data-mode="translate">🌐 Translate</div>
-    <div class="mode-tab" data-mode="relay">🔗 Relay</div>
+    <div class="mode-tab" data-mode="chatbot">💬 Chatbot</div>
   </div>
 
   <div class="omnibox-wrap">
@@ -293,7 +295,17 @@ input,textarea,button{font-family:'Outfit',sans-serif;}
 
   <div class="relay-wrap">
     <div class="relay-intro">
-      <strong>AI Chain Mode.</strong> Your prompt starts with the first AI. Each response is passed to the next AI automatically. Build multi-step creative pipelines.
+      <strong>AI Chain Mode.</strong> Your prompt starts with the first AI. Each response passes to the next automatically. Pick a preset or build your own.
+    </div>
+
+    <div class="relay-label">Presets</div>
+    <div class="preset-grid" id="presetGrid">
+      <div class="preset-pill" data-preset="director">🎬 Director</div>
+      <div class="preset-pill" data-preset="research">🔬 Research</div>
+      <div class="preset-pill" data-preset="devteam">💻 Dev Team</div>
+      <div class="preset-pill" data-preset="meeting">👥 Team Meeting</div>
+      <div class="preset-pill" data-preset="writer">✍️ Writer</div>
+      <div class="preset-pill" data-preset="debate">⚔️ Debate</div>
     </div>
 
     <div class="relay-label">Starting prompt</div>
@@ -307,6 +319,7 @@ input,textarea,button{font-family:'Outfit',sans-serif;}
       Add AI to chain
     </div>
 
+    <button class="relay-restart-btn" id="relayRestartBtn">↺ Restart Chain with Last Output</button>
     <button class="relay-run-btn" id="relayRunBtn">
       ▶ Run Chain
     </button>
@@ -399,7 +412,10 @@ const S = {
   generating:false,
   history:   JSON.parse(localStorage.getItem('aiit_h')     || '[]'),
   vault:     JSON.parse(localStorage.getItem('aiit_vault') || '[]'),
-  prefs:     JSON.parse(localStorage.getItem('aiit_p')     || '{"theme":"dark"}'),
+  prefs:        JSON.parse(localStorage.getItem('aiit_p') || '{"theme":"dark"}'),
+  textModels:   [],   // live list from pollinations /models
+  imageModels:  [],   // live list from pollinations image /models
+  providerModels: {}, // {groq: ['llama-3.1-8b-instant','llama-3.3-70b'], openrouter: [...]}
   chain:     [], // relay chain steps
   saveH()    { localStorage.setItem('aiit_h',     JSON.stringify(this.history.slice(0,30))); },
   saveV()    { localStorage.setItem('aiit_vault', JSON.stringify(this.vault.slice(0,50)));   },
@@ -413,20 +429,20 @@ const PROVIDERS = {
   pollinations: {
     name:'Pollinations', color:'#43E97B', abbr:'PL', tier:'free',
     label:'FREE · No key needed',
-    endpoint:'https://text.pollinations.ai',
+    endpoint:'https://gen.pollinations.ai/v1/chat/completions',
     model:'mistral', free:true, keyRequired:false,
     keyUrl:'https://enter.pollinations.ai',
-    keyPlaceholder:'Optional token for higher limits',
+    keyPlaceholder:'Token from auth.pollinations.ai (optional but faster)',
     connectUrl:'https://enter.pollinations.ai',
-    connectSteps:['Visit enter.pollinations.ai','Click "Get Token"','Copy and paste below'],
+    connectSteps:['Visit enter.pollinations.ai','Sign in','Generate an API key','Paste it below for faster responses'],
     test: async (key) => {
-      const r = await fetch('https://text.pollinations.ai/hi?model=mistral');
+      const r = await fetch('https://gen.pollinations.ai/text/hi?model=openai');
       return r.ok;
     },
     call: async (prompt, sys, key) => {
       const fp  = sys ? `${sys}\n\n[USER REQUEST]: ${prompt}` : prompt;
       const h   = key ? { 'Authorization': 'Bearer ' + key } : {};
-      const url = `https://text.pollinations.ai/${encodeURIComponent(fp)}?model=mistral&seed=${rand()}`;
+      const url = `https://gen.pollinations.ai/${encodeURIComponent(fp)}?model=mistral&seed=${rand()}`;
       const r   = await fetch(url, { headers: h });
       if (!r.ok) throw new Error('Pollinations ' + r.status);
       return r.text();
@@ -503,6 +519,60 @@ const PROVIDERS = {
     connectSteps:['Log in with your X (Twitter) account','Go to API Keys','Create a key','Paste it below'],
     test: async (key) => !!(await oaiCall('https://api.x.ai/v1/chat/completions', key, 'grok-beta', 'hi', '')),
     call: async (prompt, sys, key) => oaiCall('https://api.x.ai/v1/chat/completions', key, 'grok-beta', prompt, sys)
+  },
+  together: {
+    name:'Together.ai', color:'#0F6FFF', abbr:'TO', tier:'free',
+    label:'FREE · $25 credit on signup',
+    endpoint:'https://api.together.xyz/v1/chat/completions',
+    model:'meta-llama/Llama-3-8b-chat-hf', free:true, keyRequired:true,
+    keyUrl:'https://api.together.ai/settings/api-keys',
+    keyPlaceholder:'...',
+    connectUrl:'https://api.together.ai/settings/api-keys',
+    connectSteps:['Sign up at together.ai','Go to API Keys','Create a key','Paste it below'],
+    test: async (key) => !!(await oaiCall('https://api.together.xyz/v1/chat/completions', key, 'meta-llama/Llama-3-8b-chat-hf', 'hi', '')),
+    call: async (prompt, sys, key) => oaiCall('https://api.together.xyz/v1/chat/completions', key, 'meta-llama/Llama-3-8b-chat-hf', prompt, sys)
+  },
+  cohere: {
+    name:'Cohere', color:'#39594D', abbr:'CO', tier:'free',
+    label:'FREE tier available',
+    endpoint:'https://api.cohere.ai/v1/chat',
+    model:'command-r', free:true, keyRequired:true,
+    keyUrl:'https://dashboard.cohere.com/api-keys',
+    keyPlaceholder:'...',
+    connectUrl:'https://dashboard.cohere.com/api-keys',
+    connectSteps:['Sign up at cohere.com','Go to API Keys','Copy your key','Paste it below'],
+    test: async (key) => {
+      const r = await fetch('https://api.cohere.ai/v1/chat', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+        body:JSON.stringify({model:'command-r',message:'hi',max_tokens:10})
+      });
+      return r.ok;
+    },
+    call: async (prompt, sys, key) => {
+      const r = await fetch('https://api.cohere.ai/v1/chat', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+        body:JSON.stringify({model:'command-r',message:sys?`${sys}
+
+${prompt}`:prompt,max_tokens:2048})
+      });
+      if (!r.ok) throw new Error('Cohere '+r.status);
+      const d = await r.json();
+      return d.text || '';
+    }
+  },
+  perplexity: {
+    name:'Perplexity', color:'#20808D', abbr:'PP', tier:'free',
+    label:'FREE · $5 credit',
+    endpoint:'https://api.perplexity.ai/chat/completions',
+    model:'llama-3.1-sonar-small-128k-online', free:true, keyRequired:true,
+    keyUrl:'https://perplexity.ai/settings/api',
+    keyPlaceholder:'pplx-...',
+    connectUrl:'https://perplexity.ai/settings/api',
+    connectSteps:['Sign up at perplexity.ai','Go to Settings > API','Generate a key','Paste it below'],
+    test: async (key) => !!(await oaiCall('https://api.perplexity.ai/chat/completions', key, 'llama-3.1-sonar-small-128k-online', 'hi', '')),
+    call: async (prompt, sys, key) => oaiCall('https://api.perplexity.ai/chat/completions', key, 'llama-3.1-sonar-small-128k-online', prompt, sys)
   },
   // ── PAID TIER ───────────────────────────────────────────────
   openai: {
@@ -636,6 +706,40 @@ function pickProvider(preferredId) {
   return connected[0];
 }
 
+// ── KNOWN MULTI-MODEL REGISTRIES ─────────────────────
+// Models per provider — used for fan-out
+const PROVIDER_MODELS = {
+  groq: [
+    { id:'llama-3.1-8b-instant',   name:'Llama 3.1 8B',   tags:['fast','general'] },
+    { id:'llama-3.3-70b-versatile',name:'Llama 3.3 70B',  tags:['quality','general'] },
+    { id:'mixtral-8x7b-32768',     name:'Mixtral 8x7B',   tags:['general','long'] },
+    { id:'gemma2-9b-it',           name:'Gemma 2 9B',     tags:['general'] },
+    { id:'deepseek-r1-distill-llama-70b', name:'DeepSeek R1', tags:['reason','code'] },
+  ],
+  openrouter: [
+    { id:'mistralai/mistral-7b-instruct:free', name:'Mistral 7B',   tags:['general','free'] },
+    { id:'google/gemma-3-1b-it:free',          name:'Gemma 3 1B',   tags:['fast','free'] },
+    { id:'meta-llama/llama-3.2-3b-instruct:free', name:'Llama 3.2', tags:['general','free'] },
+  ],
+  together: [
+    { id:'meta-llama/Llama-3-8b-chat-hf',   name:'Llama 3 8B',  tags:['general'] },
+    { id:'mistralai/Mixtral-8x7B-Instruct-v0.1', name:'Mixtral', tags:['general'] },
+    { id:'codellama/CodeLlama-34b-Instruct-hf',  name:'CodeLlama',tags:['code'] },
+  ],
+  // Pollinations models fetched dynamically on load
+};
+
+// Tags → mode mapping for smart fan-out selection
+const MODE_TAGS = {
+  code:      ['code'],
+  reason:    ['reason'],
+  all:       ['general','fast'],
+  music:     ['general'],
+  translate: ['general','long'],
+  slides:    ['general','long'],
+  research:  ['general'],
+};
+
 // ── SYSTEM PROMPTS ───────────────────────────────────
 const SYS = {
   code:     'Return ONLY a complete self-contained HTML file with inline CSS and JS. No markdown, no explanations.',
@@ -647,26 +751,50 @@ const SYS = {
 
 // ── UNIFIED REQUEST ──────────────────────────────────
 async function callProvider(provider, prompt, sys) {
+  // If provider has a model override from fan-out, use a modified call
+  if (provider.id === 'pollinations' && provider.model && provider.model !== 'openai') {
+    const key = provider.key || getKey('pollinations') || '';
+    const headers = { 'Content-Type':'application/json' };
+    if (key) headers['Authorization'] = 'Bearer ' + key;
+    const r = await fetch(POLL_CHAT, {
+      method:'POST',
+      headers,
+      body: JSON.stringify({
+        model: provider.model,
+        messages: [
+          ...(sys ? [{ role:'system', content:sys }] : []),
+          { role:'user', content:prompt }
+        ],
+        seed: rand()
+      })
+    });
+    if (!r.ok) throw new Error('Pollinations/' + provider.model + ' ' + r.status);
+    const d = await r.json();
+    return d.choices?.[0]?.message?.content || '';
+  }
   return provider.call(prompt, sys || '', provider.key || getKey(provider.id));
 }
 
-async function unifiedRequest(prompt, mode) {
+async function unifiedRequest(prompt, mode, providerOverride) {
   // Images: always Pollinations img.src
   if (mode === 'image') {
     const isLandscape = /landscape|wide|banner|wallpaper|panorama/i.test(prompt);
     const isPortrait  = /portrait|tall|poster|phone|vertical|story/i.test(prompt);
     const [w,h] = isLandscape ? [1024,576] : isPortrait ? [576,1024] : [768,768];
-    return { type:'image', url:`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=flux&width=${w}&height=${h}&seed=${rand()}` };
+    return { type:'image', url:`https://gen.pollinations.ai/image/${encodeURIComponent(prompt)}?model=flux&width=${w}&height=${h}&seed=${rand()}` };
   }
   // Audio: Pollinations TTS
   if (mode === 'audio' || mode === 'speech') {
-    const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai-audio&voice=nova&seed=${rand()}`;
-    const r   = await fetch(url);
-    if (!r.ok) throw new Error('Audio failed');
+    // 2026: audio via gen.pollinations.ai
+    const provKey = getKey('pollinations') || '';
+    const keyParam = provKey ? `&key=${provKey}` : '';
+    const url = `${POLL_GEN}/text/${encodeURIComponent(prompt)}?model=openai-audio&voice=nova&seed=${rand()}${keyParam}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('Audio failed ' + r.status);
     return { type:'audio', blobUrl: URL.createObjectURL(await r.blob()) };
   }
-  // Text: use best connected provider
-  const provider = pickProvider(null);
+  // Text: use override or best connected provider
+  const provider = providerOverride || pickProvider(null);
   if (!provider) throw new Error('No AI providers connected. Go to Connect tab to add a key.');
   const sys = SYS[mode] || '';
   const text = await callProvider(provider, prompt, sys);
@@ -676,6 +804,8 @@ async function unifiedRequest(prompt, mode) {
 // ── SMART ROUTING ────────────────────────────────────
 function resolveMode(tab, prompt) {
   let mode = tab;
+  if (tab === 'video') return 'video';
+  if (tab === 'chatbot') return 'all';
   if (tab === 'all') {
     const p = prompt.toLowerCase();
     if (/draw|image|picture|generate a photo|photo of|painting|illustration|render|visualize/.test(p)) mode = 'image';
@@ -742,22 +872,50 @@ function cardDone(id, result, prompt) {
 
   if (result.type === 'image') {
     body.innerHTML = `<div class="fc-img-loading" id="${id}-imgwrap"><div class="spin" style="border-top-color:var(--cor2)"></div><span>Generating image…</span></div>`;
+    // Capture id in closure — not body/foot refs which may be stale
+    const imgId = id;
+    const imgUrl = result.url;
     const img = document.createElement('img');
     img.style.cssText = 'width:100%;display:block;';
     img.alt = prompt;
     img.onload = () => {
-      const w = $(`${id}-imgwrap`);
-      if (w) { w.className='fc-img'; w.innerHTML=''; w.appendChild(img); }
-      foot.style.display = 'flex';
+      const wrap = $(`${imgId}-imgwrap`);
+      const f2   = $(`${imgId}-foot`);
+      const dot2 = document.querySelector(`#${imgId} .fc-dot`);
+      if (wrap) { wrap.className='fc-img'; wrap.innerHTML=''; wrap.appendChild(img); }
+      if (f2)   { f2.style.display='flex'; }
+      if (dot2) { dot2.style.animation='none'; dot2.style.opacity='1'; }
       const dlA = document.createElement('a');
-      dlA.href=result.url; dlA.download='aiit.jpg'; dlA.target='_blank';
+      dlA.href=imgUrl; dlA.download='harry-ai.jpg'; dlA.target='_blank';
       dlA.className='fc-act dl-btn'; dlA.style.textDecoration='none'; dlA.textContent='⬇ Save';
-      foot.prepend(dlA);
-      const starBtn = document.querySelector(`#${id} [data-star]`);
-      if (starBtn) starBtn.dataset.imgUrl = result.url;
+      if (f2) f2.prepend(dlA);
+      const starBtn = document.querySelector(`#${imgId} [data-star]`);
+      if (starBtn) starBtn.dataset.imgUrl = imgUrl;
     };
-    img.onerror = () => { if(body) body.innerHTML='<div class="fc-body fc-text" style="color:var(--cor2)">Image failed — tap retry or check your prompt.</div>'; };
-    img.src = result.url;
+    img.onerror = () => {
+      const b2 = $(`${imgId}-body`);
+      if (b2) b2.innerHTML = '<div class="fc-body fc-text" style="color:var(--cor2)">⚠ Image failed — Pollinations may be busy. Try again.</div>';
+    };
+    img.src = imgUrl;
+    return;
+  }
+
+  if (result.type === 'video') {
+    body.innerHTML = `
+      <div style="padding:0;border-radius:0;overflow:hidden">
+        <iframe
+          src="https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(result.query)}"
+          style="width:100%;height:280px;display:block;border:none"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
+          allowfullscreen>
+        </iframe>
+        <div style="padding:10px 13px;font-size:12px;color:var(--t3)">
+          YouTube results for: <strong style="color:var(--t2)">${result.query}</strong>
+          <br><span style="font-size:11px">Tip: click a video, then use fullscreen for best experience</span>
+        </div>
+      </div>`;
+    if (foot) foot.style.display = 'flex';
+    if (dot)  { dot.style.animation='none'; dot.style.opacity='1'; }
     return;
   }
 
@@ -831,29 +989,149 @@ document.addEventListener('click', e => {
 });
 
 // ── CREATE HANDLER ───────────────────────────────────
+// Pick best providers for a given mode
+// Build a flat list of {provider, modelId, modelName, displayName} engines to fire
+function buildEngineList(mode) {
+  const connected = getConnectedProviders();
+  if (!connected.length) return [];
+
+  const engines = [];
+
+  // Provider priority per mode
+  const preferences = {
+    code:      ['anthropic','deepseek','groq','openrouter','together','openai','mistral','pollinations'],
+    reason:    ['deepseek','groq','anthropic','openai','openrouter','pollinations'],
+    image:     ['pollinations'],
+    audio:     ['pollinations'],
+    music:     ['openai','anthropic','groq','mistral','pollinations'],
+    translate: ['deepseek','mistral','groq','openai','pollinations'],
+    slides:    ['openai','anthropic','groq','mistral','pollinations'],
+    research:  ['perplexity','openai','groq','anthropic','pollinations'],
+    all:       ['groq','openai','anthropic','mistral','deepseek','openrouter','together','pollinations'],
+  };
+  const order = preferences[mode] || preferences.all;
+  const sorted = [...connected].sort((a,b) => {
+    const ai = order.indexOf(a.id); const bi = order.indexOf(b.id);
+    return (ai===-1?999:ai) - (bi===-1?999:bi);
+  });
+
+  // Images: use all Pollinations image models
+  if (mode === 'image') {
+    const imgModels = S.imageModels.length
+      ? S.imageModels.slice(0,4)
+      : ['flux','turbo'];
+    imgModels.forEach(m => {
+      engines.push({ provider: sorted[0] || connected[0], modelId: m, modelName: m.charAt(0).toUpperCase()+m.slice(1), type:'image' });
+    });
+    return engines;
+  }
+
+  // Audio: single engine
+  if (mode === 'audio' || mode === 'speech') {
+    const p = connected.find(p => p.id === 'pollinations') || connected[0];
+    engines.push({ provider: p, modelId: 'openai-audio', modelName: 'TTS', type:'audio' });
+    return engines;
+  }
+
+  // Text: fan out across providers AND their available models
+  const MAX_ENGINES = 6; // cap to avoid overwhelming the feed
+  const tags = MODE_TAGS[mode] || MODE_TAGS.all;
+
+  for (const prov of sorted) {
+    if (engines.length >= MAX_ENGINES) break;
+
+    // Pollinations 2026: fan out across available models via POST
+    if (prov.id === 'pollinations') {
+      const models = S.textModels.length
+        ? S.textModels.filter(m => !m.includes('audio')).slice(0, 3)
+        : ['openai','mistral','qwen-coder'];
+      models.forEach(m => {
+        if (engines.length < MAX_ENGINES) {
+          engines.push({ provider: prov, modelId: m, modelName: m.charAt(0).toUpperCase()+m.slice(1), type:'text' });
+        }
+      });
+      continue;
+    }
+
+    // Providers with known multi-model registry: fan out filtered by tags
+    const registry = PROVIDER_MODELS[prov.id];
+    if (registry) {
+      const filtered = registry.filter(m => m.tags.some(t => tags.includes(t)) || tags.includes('general'));
+      const toFire = filtered.slice(0, 2); // max 2 per provider
+      if (toFire.length) {
+        toFire.forEach(m => {
+          if (engines.length < MAX_ENGINES) {
+            engines.push({ provider: prov, modelId: m.id, modelName: m.name, type:'text' });
+          }
+        });
+        continue;
+      }
+    }
+
+    // Single-model providers (Anthropic, Gemini, Mistral etc)
+    engines.push({ provider: prov, modelId: prov.model || '', modelName: prov.name, type:'text' });
+  }
+
+  return engines;
+}
+
+// Legacy compat shim
+function pickProvidersForMode(mode, count) {
+  const engines = buildEngineList(mode);
+  return engines.map(e => e.provider).filter((p,i,a) => a.findIndex(x=>x.id===p.id)===i).slice(0,count||2);
+}
+
+async function fireEngine(prompt, mode, engine, feedEl) {
+  const modeColors = {image:'var(--cor2)',code:'var(--sky2)',audio:'var(--amb2)',music:'var(--amb2)',reason:'var(--sky2)',translate:'var(--amb2)'};
+  const color = modeColors[mode] || 'var(--ind2)';
+  const label = engine.modelName || engine.provider.name;
+  const sublabel = engine.provider.name !== engine.modelName ? engine.provider.name : '';
+  const cid = makeCard(feedEl, label, color, sublabel);
+  try {
+    // Clone provider with overridden model for fan-out
+    const provWithModel = { ...engine.provider, model: engine.modelId || engine.provider.model };
+    const result = await unifiedRequest(prompt, mode, provWithModel);
+    cardDone(cid, result, prompt);
+  } catch(err) {
+    cardFail(cid, err.message);
+  }
+}
+
+// Legacy shim
+async function fireOne(prompt, mode, provider, feedEl) {
+  await fireEngine(prompt, mode, { provider, modelId: provider.model, modelName: provider.name, type:'text' }, feedEl);
+}
+
 async function handleCreate() {
   const prompt = UI.mainTa.value.trim(); if (!prompt) return;
   if (S.generating) return;
   S.generating = true; UI.createBtn.disabled=true; UI.createBtn.textContent='...';
 
-  const mode    = resolveMode(S.tab, prompt);
-  const color   = {image:'var(--cor2)',code:'var(--sky2)',audio:'var(--amb2)',music:'var(--amb2)',reason:'var(--sky2)',translate:'var(--amb2)'}[mode] || 'var(--ind2)';
-  const label   = mode.charAt(0).toUpperCase() + mode.slice(1);
-  const provider = pickProvider(null);
-  const cid = makeCard(UI.homeFeed, label, color, provider?.name || '');
+  const mode = resolveMode(S.tab, prompt);
+  const engines = buildEngineList(mode);
 
-  S.history.unshift({ type:label, q:prompt, ts:Date.now() }); S.saveH();
+  if (!engines.length) {
+    const cid = makeCard(UI.homeFeed, 'Error', 'var(--cor2)', '');
+    cardFail(cid, 'No providers connected. Go to Connect tab to add a key.');
+    S.generating=false; UI.createBtn.disabled=false; UI.createBtn.textContent='CREATE';
+    return;
+  }
+
+  S.history.unshift({ type: mode, q: prompt, ts: Date.now() }); S.saveH();
   UI.clearFeedBtn.style.display = 'block';
   UI.mainTa.value = ''; UI.mainTa.style.height = 'auto';
 
-  try {
-    const result = await unifiedRequest(prompt, mode);
-    cardDone(cid, result, prompt);
-  } catch(err) {
-    cardFail(cid, err.message);
-  } finally {
-    S.generating = false; UI.createBtn.disabled=false; UI.createBtn.textContent='CREATE';
-  }
+  // Show engine count
+  const countEl = document.createElement('div');
+  countEl.style.cssText = 'padding:4px 14px 8px;font-size:11px;color:var(--t3)';
+  countEl.textContent = `Firing ${engines.length} engine${engines.length>1?'s':''} in parallel…`;
+  UI.homeFeed.before(countEl);
+  setTimeout(() => countEl.remove(), 4000);
+
+  // Fan-out: fire ALL engines simultaneously
+  await Promise.allSettled(engines.map(eng => fireEngine(prompt, mode, eng, UI.homeFeed)));
+
+  S.generating=false; UI.createBtn.disabled=false; UI.createBtn.textContent='CREATE';
 }
 
 // ── RELAY CHAIN ──────────────────────────────────────
@@ -986,6 +1264,9 @@ async function runRelay() {
   // Save to history
   S.history.unshift({ type:'Relay chain', q:startPrompt, ts:Date.now() }); S.saveH();
 
+  lastRelayOutput = currentInput;
+  const rrb = $('relayRestartBtn');
+  if (rrb) rrb.style.display = 'block';
   UI.relayRunBtn.disabled=false; UI.relayRunBtn.textContent='▶ Run Chain';
 }
 
@@ -1302,7 +1583,97 @@ UI.improveBtn.addEventListener('click', async () => {
 UI.addStepBtn.addEventListener('click', () => addChainStep('pollinations',''));
 UI.relayRunBtn.addEventListener('click', runRelay);
 
-// Seed chain with 2 default steps
+// ── RELAY PRESETS ────────────────────────────────────
+const PRESETS = {
+  director: {
+    label: '🎬 Director',
+    steps: [
+      { provider:'groq',        instruction:'' },
+      { provider:'anthropic',   instruction:'You are a creative director. Review the above and identify what is brilliant and what needs work. Be specific.' },
+      { provider:'openai',      instruction:'You are a producer. Take the feedback above and rewrite the original into a polished final version.' },
+    ]
+  },
+  research: {
+    label: '🔬 Research',
+    steps: [
+      { provider:'perplexity',  instruction:'' },
+      { provider:'deepseek',    instruction:'Analyze the research above. Identify gaps, contradictions, and key insights. Be critical.' },
+      { provider:'openai',      instruction:'Synthesize everything into a clear, structured summary with key takeaways and recommendations.' },
+    ]
+  },
+  devteam: {
+    label: '💻 Dev Team',
+    steps: [
+      { provider:'deepseek',    instruction:'' },
+      { provider:'anthropic',   instruction:'You are a senior code reviewer. Review the code above. Find bugs, security issues, and improvements.' },
+      { provider:'groq',        instruction:'Rewrite the code incorporating all the review feedback. Output only clean final code.' },
+    ]
+  },
+  meeting: {
+    label: '👥 Team Meeting',
+    steps: [
+      { provider:'groq',        instruction:'' },
+      { provider:'mistral',     instruction:'You are a skeptic in this meeting. Challenge the ideas above. What could go wrong? What is missing?' },
+      { provider:'openai',      instruction:'You are the facilitator. Summarize the discussion, resolve conflicts, and write clear action items.' },
+    ]
+  },
+  writer: {
+    label: '✍️ Writer',
+    steps: [
+      { provider:'openai',      instruction:'' },
+      { provider:'anthropic',   instruction:'You are an editor. Improve the writing above. Fix structure, tone, clarity. Show your edits.' },
+      { provider:'groq',        instruction:'You are a proofreader. Final pass — fix grammar, flow, and punch up the opening and closing.' },
+    ]
+  },
+  debate: {
+    label: '⚔️ Debate',
+    steps: [
+      { provider:'groq',        instruction:'' },
+      { provider:'deepseek',    instruction:'You are a devil\'s advocate. Strongly argue the opposite position to everything stated above.' },
+      { provider:'openai',      instruction:'You are a judge. Weigh both arguments fairly and give a balanced verdict with reasoning.' },
+    ]
+  },
+};
+
+function loadPreset(name) {
+  const preset = PRESETS[name]; if (!preset) return;
+  S.chain = []; UI.chainList.innerHTML = '';
+  // Use best available connected provider for each step
+  const connected = getConnectedProviders().map(p => p.id);
+  preset.steps.forEach(step => {
+    // Pick the preferred provider if connected, else best available
+    const prov = connected.includes(step.provider)
+      ? step.provider
+      : (connected[0] || 'pollinations');
+    addChainStep(prov, step.instruction);
+  });
+  // Highlight active preset
+  document.querySelectorAll('.preset-pill').forEach(p => p.classList.remove('active'));
+  document.querySelector(`[data-preset="${name}"]`)?.classList.add('active');
+}
+
+// Wire preset buttons
+document.querySelectorAll('.preset-pill').forEach(btn => {
+  btn.addEventListener('click', () => loadPreset(btn.dataset.preset));
+});
+
+// ── RELAY RESTART ─────────────────────────────────────
+let lastRelayOutput = '';
+const relayRestartBtn = $('relayRestartBtn');
+
+if (relayRestartBtn) {
+  relayRestartBtn.addEventListener('click', () => {
+    if (!lastRelayOutput) return;
+    UI.relayPrompt.value = lastRelayOutput.substring(0, 500);
+    UI.relayResults.style.display = 'none';
+    UI.relayResults.innerHTML = '';
+    relayRestartBtn.style.display = 'none';
+    // Scroll to top of relay
+    UI.relayPrompt.scrollIntoView({ behavior:'smooth' });
+  });
+}
+
+// Seed with default steps
 addChainStep('pollinations', '');
 addChainStep('groq', 'Now critique and improve the response above');
 
@@ -1318,6 +1689,29 @@ if (window.visualViewport) {
 applyTheme(S.prefs.theme || 'dark');
 updateStatusPill();
 
+// Fetch Pollinations model lists for fan-out
+fetch('https://gen.pollinations.ai/v1/models')
+  .then(r => r.json())
+  .then(data => {
+    if (Array.isArray(data) && data.length) {
+      S.textModels = data.filter(m => typeof m === 'string');
+      console.log('Pollinations text models:', S.textModels);
+    }
+  }).catch(() => {
+    S.textModels = ['openai','mistral','qwen','gemini','deepseek'];
+  });
+
+fetch('https://gen.pollinations.ai/image/models')
+  .then(r => r.json())
+  .then(data => {
+    if (Array.isArray(data) && data.length) {
+      S.imageModels = data.filter(m => typeof m === 'string' || m.name).map(m => m.name || m);
+      console.log('Pollinations image models:', S.imageModels);
+    }
+  }).catch(() => {
+    S.imageModels = ['flux','turbo'];
+  });
+
 // Warn if opened as file:// — API calls won't work
 if (location.protocol === 'file:') {
   const warn = document.createElement('div');
@@ -1325,7 +1719,7 @@ if (location.protocol === 'file:') {
   warn.innerHTML = '<strong>⚠ Opened as a local file.</strong> AI calls need a real URL to work.<br>Host on GitHub Pages or run <code style="background:rgba(0,0,0,.2);padding:1px 5px;border-radius:4px">npx serve .</code> locally.';
   UI.homeFeed.before(warn);
 }
-console.log('Harry A.I. v19: GitHub Pages ready \u2705');
+console.log('Harry A.I. v23: Pollinations 2026 gen.pollinations.ai \u2705');
 
 }); // end DOMContentLoaded
 </script>
