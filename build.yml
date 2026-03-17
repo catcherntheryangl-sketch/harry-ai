@@ -1,4 +1,4 @@
-name: Build Harry A.I. Windows App
+name: Build Harry A.I.
 
 on:
   push:
@@ -9,46 +9,30 @@ permissions:
   contents: write
 
 jobs:
-  build-windows:
+  build:
     runs-on: windows-latest
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Copy HTML to index.html
-        run: copy harry-ai.html index.html
+      - run: copy harry-ai.html index.html
         shell: cmd
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build Windows EXE
-        run: npm run build
+      - run: npm install
+      - run: npm run build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: List dist folder
-        run: dir dist
+      - run: dir dist
         shell: cmd
-        continue-on-error: true
-
-      - name: Upload EXE artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: HarryAI-Windows
           path: dist/*.exe
           if-no-files-found: warn
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ github.run_number }}
           name: Harry A.I. v${{ github.run_number }}
-          body: Windows installer — download HarryAI-Setup.exe below
           files: dist/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
