@@ -3,56 +3,52 @@ name: Build Harry A.I. Windows App
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'harry-ai.html'
-      - 'main.js'
-      - 'package.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build-windows:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: Copy HTML to index.html
         run: copy harry-ai.html index.html
+        shell: cmd
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build Windows EXE
         run: npm run build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload EXE as release artifact
+      - name: List dist folder
+        run: dir dist
+        shell: cmd
+        continue-on-error: true
+
+      - name: Upload EXE artifact
         uses: actions/upload-artifact@v4
         with:
           name: HarryAI-Windows
-          path: dist/HarryAI-Setup.exe
-          retention-days: 30
+          path: dist/*.exe
+          if-no-files-found: warn
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
-        if: success()
         with:
           tag_name: v${{ github.run_number }}
           name: Harry A.I. v${{ github.run_number }}
-          body: |
-            Windows installer — auto-built from latest code.
-
-            **Download:** HarryAI-Setup.exe below
-            **Web version:** https://catcherntheryangl-sketch.github.io/harry-ai
-          files: dist/HarryAI-Setup.exe
-          draft: false
-          prerelease: false
+          body: Windows installer — download HarryAI-Setup.exe below
+          files: dist/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
