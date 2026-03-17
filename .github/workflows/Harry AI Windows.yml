@@ -13,7 +13,7 @@ jobs:
           node-version: '20'
       - run: copy harry-ai.html index.html
         shell: cmd
-      - run: npm ci
+      - run: npm install
       - run: npm run build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
